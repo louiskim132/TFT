@@ -18,7 +18,15 @@ from .state_io import (
     game_state_to_dict,
     validate_game_state,
 )
-from .stats import CompStats, InMemoryStatsProvider, ItemStats, StatsProvider, UnitStats
+from .stats import (
+    CompStats,
+    InMemoryStatsProvider,
+    ItemStats,
+    KnowledgeSnapshot,
+    StatsProvider,
+    TraitStats,
+    UnitStats,
+)
 
 __all__ = [
     "SCHEMA_VERSION",
@@ -31,12 +39,14 @@ __all__ = [
     "GameState",
     "InMemoryStatsProvider",
     "ItemStats",
+    "KnowledgeSnapshot",
     "OpponentState",
     "ScoredAction",
     "ShopUnit",
     "StateValidationError",
     "StatsProvider",
     "TraitState",
+    "TraitStats",
     "UnitState",
     "UnitStats",
     "game_state_from_dict",
