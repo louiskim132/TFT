@@ -53,6 +53,21 @@ by opponents, from summary or per-opponent scouting).
 `max_interest` (+ ≥50g), `healthy_hp_greed` (+ ≥70hp), `critical_hp_risk`
 (− ≤25hp).
 
+### CHOOSE_AUGMENT
+
+Augment strength is **derived**, not looked up — no accessible source
+publishes per-augment stats. `augments.py` compares the state against guide
+benchmarks (level pacing curve, expected gold, expected items per stage;
+comp `typical_level` overrides the curve for roll lines) and produces a
+`NeedProfile`: normalized deficits for xp/econ/items. Each offered augment is
+classified by name keyword into ECON/XP/ITEM/TRAIT/COMBAT.
+
+| feature | direction | meaning |
+| --- | --- | --- |
+| `need_match` | + | augment's category vs. that category's deficit |
+| `comp_augment_fit` | + | augment listed in a comp's `augment_preferences` |
+| `trait_on_board` | + | emblem/crest matches a trait already on board |
+
 ## Confidence
 
 Currently `sigmoid(|score|)` — an explicit placeholder. Phase 9 (margin- and

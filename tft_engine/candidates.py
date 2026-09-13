@@ -33,4 +33,7 @@ def generate_candidates(state: GameState, comps: list[CompStats]) -> list[Candid
     for comp in comps:
         actions.append(CandidateAction(ActionType.PLAY_COMP, target=comp.name))
 
+    for augment in state.augment_choices:
+        actions.append(CandidateAction(ActionType.CHOOSE_AUGMENT, target=augment))
+
     return actions

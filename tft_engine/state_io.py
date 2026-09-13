@@ -194,6 +194,9 @@ def game_state_from_dict(payload: Mapping[str, Any]) -> GameState:
         components=_str_list(payload.get("components"), "components"),
         completed_items=_str_list(payload.get("completed_items"), "completed_items"),
         augments=_str_list(payload.get("augments"), "augments"),
+        augment_choices=_str_list(
+            payload.get("augment_choices"), "augment_choices"
+        ),
         contested_comps={
             str(k): int(v) for k, v in (payload.get("contested_comps") or {}).items()
         },
@@ -239,7 +242,13 @@ def game_state_to_dict(state: GameState) -> dict[str, Any]:
         out["set"] = state.set
     if state.streak:
         out["streak"] = state.streak
-    for name in ("components", "completed_items", "augments", "consumables"):
+    for name in (
+        "components",
+        "completed_items",
+        "augments",
+        "augment_choices",
+        "consumables",
+    ):
         value = getattr(state, name)
         if value:
             out[name] = list(value)

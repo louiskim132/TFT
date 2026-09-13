@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from math import exp
 
+from .augments import AugmentCategory, classify_augment, compute_needs
 from .models import ActionType, CandidateAction, GameState, ScoreFeature, ScoredAction
 from .reliability import DEFAULT_PSEUDOCOUNT, shrunk_value
 from .stats import CompStats
@@ -51,6 +52,8 @@ class ActionScorer:
             return self._score_roll(state, action)
         if action.action_type == ActionType.BUY:
             return self._score_buy(state, action)
+        if action.action_type == ActionType.CHOOSE_AUGMENT:
+            return self._score_augment(state, action)
         if action.action_type == ActionType.HOLD:
             return self._score_hold(state, action)
         return self._finish(action, 0.0, [])
@@ -150,6 +153,58 @@ class ActionScorer:
                 f"{contested} copies held by opponents",
             ),
         ]
+        return self._finish(action, 0.0, features)
+
+    def _score_augment(
+        self, state: GameState, action: CandidateAction
+    ) -> ScoredAction:
+        """Rank an augment by which deficit it covers (see augments.py):
+        level-behind -> XP, gold-behind -> ECON, items-behind -> ITEM, healthy
+        board -> COMBAT, plus comp-synergy boosts."""
+        name = action.target or ""
+        category = classify_augment(name)
+        needs = compute_needs(state, list(self.comps.values()))
+        need_by_cat = needs.by_category()
+        top = needs.top_need()
+
+        features: list[ScoreFeature] = [
+            _feature(
+                "need_match",
+                need_by_cat.get(category, 0.0),
+                0.6,
+                (
+                    f"{category.value} augment; top deficit is {top.value} "
+                    f"(xp~{needs.xp_deficit_gold}g, gold~{needs.gold_deficit:.0f}g, "
+                    f"items~{needs.item_deficit:.1f})"
+                ),
+            ),
+        ]
+
+        matching_comps = [c for c in self.comps.values() if name in c.augment_preferences]
+        if matching_comps:
+            best = min(matching_comps, key=lambda c: c.average_placement)
+            features.append(
+                _feature(
+                    "comp_augment_fit",
+                    1.0,
+                    0.5,
+                    f"Listed as preferred augment for '{best.name}'",
+                )
+            )
+
+        if category == AugmentCategory.TRAIT:
+            board_traits = {t.name.lower() for t in state.traits}
+            lowered = name.lower()
+            if any(t in lowered for t in board_traits):
+                features.append(
+                    _feature(
+                        "trait_on_board",
+                        1.0,
+                        0.3,
+                        "Emblem/crest matches a trait already on board",
+                    )
+                )
+
         return self._finish(action, 0.0, features)
 
     def _score_hold(self, state: GameState, action: CandidateAction) -> ScoredAction:

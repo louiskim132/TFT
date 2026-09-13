@@ -15,6 +15,7 @@ class ActionType(str, Enum):
     LEVEL = "level"
     PLAY_COMP = "play_comp"
     SLAM_ITEM = "slam_item"
+    CHOOSE_AUGMENT = "choose_augment"
 
 
 @dataclass(frozen=True)
@@ -86,6 +87,8 @@ class GameState:
     components: list[str] = field(default_factory=list)
     completed_items: list[str] = field(default_factory=list)
     augments: list[str] = field(default_factory=list)
+    # Augments currently offered to pick from (empty = no pending choice).
+    augment_choices: list[str] = field(default_factory=list)
     # Lobby summaries; may be supplied directly or derived from `opponents`.
     contested_comps: dict[str, int] = field(default_factory=dict)
     contested_units: dict[str, int] = field(default_factory=dict)
