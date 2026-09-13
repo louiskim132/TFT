@@ -149,8 +149,11 @@ class SQLiteStatsProvider:
 
     def apply_snapshot(self, snapshot: KnowledgeSnapshot) -> int:
         """Insert a complete snapshot and atomically make it the active one for
-        its patch. Returns the new snapshot id."""
+        its patch. Sections left as None on the snapshot inherit the previous
+        active snapshot's rows for that patch, so sources can refresh only the
+        data they own. Returns the new snapshot id."""
         with self.conn:  # single transaction: all-or-nothing
+            prev = self._active_snapshot_id(snapshot.patch)
             cur = self.conn.execute(
                 "INSERT INTO snapshots (patch, source, retrieved_at, active)"
                 " VALUES (?, ?, ?, 0)",
@@ -158,81 +161,69 @@ class SQLiteStatsProvider:
             )
             sid = int(cur.lastrowid)
 
-            for comp in snapshot.comps:
-                cur = self.conn.execute(
-                    """INSERT INTO compositions
-                       (snapshot_id, name, composition_id, rank_bucket, region,
-                        average_placement, top4_rate, win_rate, play_rate,
-                        sample_size, typical_level)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (
-                        sid, comp.name, comp.composition_id, comp.rank_bucket,
-                        comp.region, comp.average_placement, comp.top4_rate,
-                        comp.win_rate, comp.play_rate, comp.sample_size,
-                        comp.typical_level,
-                    ),
-                )
-                comp_row = int(cur.lastrowid)
-                self.conn.executemany(
-                    "INSERT INTO composition_units (composition_id, unit, role)"
-                    " VALUES (?, ?, ?)",
-                    [(comp_row, u, "core") for u in sorted(comp.core_units)]
-                    + [(comp_row, u, "optional") for u in sorted(comp.optional_units)],
-                )
-                self.conn.executemany(
-                    "INSERT INTO composition_items (composition_id, item)"
-                    " VALUES (?, ?)",
-                    [(comp_row, i) for i in sorted(comp.preferred_items)],
-                )
-                self.conn.executemany(
-                    "INSERT INTO composition_augments (composition_id, augment)"
-                    " VALUES (?, ?)",
-                    [(comp_row, a) for a in sorted(comp.augment_preferences)],
-                )
+            if snapshot.comps is None:
+                if prev is not None:
+                    self._copy_comp_section(prev, sid)
+            else:
+                self._insert_comps(sid, snapshot.comps)
 
-            for unit in snapshot.units:
-                cur = self.conn.execute(
-                    """INSERT INTO unit_stats
-                       (snapshot_id, name, star_level, stage, cost,
-                        average_placement, top4_rate, win_rate, play_rate, sample_size)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (
-                        sid, unit.name, unit.star_level, unit.stage, unit.cost,
-                        unit.average_placement, unit.top4_rate, unit.win_rate,
-                        unit.play_rate, unit.sample_size,
-                    ),
-                )
-                unit_row = int(cur.lastrowid)
-                self.conn.executemany(
-                    "INSERT INTO unit_traits (unit_stats_id, trait) VALUES (?, ?)",
-                    [(unit_row, t) for t in sorted(unit.traits)],
-                )
+            if snapshot.units is None:
+                if prev is not None:
+                    self._copy_unit_section(prev, sid)
+            else:
+                self._insert_units(sid, snapshot.units)
 
-            for item in snapshot.items:
-                self.conn.execute(
-                    """INSERT INTO item_stats
-                       (snapshot_id, name, holder, stage, composition,
-                        average_placement, top4_rate, win_rate, play_rate, sample_size)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (
-                        sid, item.name, item.holder, item.stage, item.composition,
-                        item.average_placement, item.top4_rate, item.win_rate,
-                        item.play_rate, item.sample_size,
-                    ),
-                )
+            if snapshot.items is None:
+                if prev is not None:
+                    self.conn.execute(
+                        """INSERT INTO item_stats
+                           (snapshot_id, name, holder, stage, composition,
+                            average_placement, top4_rate, win_rate, play_rate,
+                            sample_size)
+                           SELECT ?, name, holder, stage, composition,
+                                  average_placement, top4_rate, win_rate,
+                                  play_rate, sample_size
+                           FROM item_stats WHERE snapshot_id = ?""",
+                        (sid, prev),
+                    )
+            else:
+                for item in snapshot.items:
+                    self.conn.execute(
+                        """INSERT INTO item_stats
+                           (snapshot_id, name, holder, stage, composition,
+                            average_placement, top4_rate, win_rate, play_rate, sample_size)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (
+                            sid, item.name, item.holder, item.stage, item.composition,
+                            item.average_placement, item.top4_rate, item.win_rate,
+                            item.play_rate, item.sample_size,
+                        ),
+                    )
 
-            for trait in snapshot.traits:
-                self.conn.execute(
-                    """INSERT INTO trait_stats
-                       (snapshot_id, name, breakpoint, stage, average_placement,
-                        top4_rate, win_rate, play_rate, sample_size)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (
-                        sid, trait.name, trait.breakpoint, trait.stage,
-                        trait.average_placement, trait.top4_rate, trait.win_rate,
-                        trait.play_rate, trait.sample_size,
-                    ),
-                )
+            if snapshot.traits is None:
+                if prev is not None:
+                    self.conn.execute(
+                        """INSERT INTO trait_stats
+                           (snapshot_id, name, breakpoint, stage, average_placement,
+                            top4_rate, win_rate, play_rate, sample_size)
+                           SELECT ?, name, breakpoint, stage, average_placement,
+                                  top4_rate, win_rate, play_rate, sample_size
+                           FROM trait_stats WHERE snapshot_id = ?""",
+                        (sid, prev),
+                    )
+            else:
+                for trait in snapshot.traits:
+                    self.conn.execute(
+                        """INSERT INTO trait_stats
+                           (snapshot_id, name, breakpoint, stage, average_placement,
+                            top4_rate, win_rate, play_rate, sample_size)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (
+                            sid, trait.name, trait.breakpoint, trait.stage,
+                            trait.average_placement, trait.top4_rate, trait.win_rate,
+                            trait.play_rate, trait.sample_size,
+                        ),
+                    )
 
             # Atomic swap: deactivate previous snapshots for this patch.
             self.conn.execute(
@@ -241,6 +232,112 @@ class SQLiteStatsProvider:
             )
             self.conn.execute("UPDATE snapshots SET active = 1 WHERE id = ?", (sid,))
         return sid
+
+    def _insert_comps(self, sid: int, comps: list[CompStats]) -> None:
+        for comp in comps:
+            cur = self.conn.execute(
+                """INSERT INTO compositions
+                   (snapshot_id, name, composition_id, rank_bucket, region,
+                    average_placement, top4_rate, win_rate, play_rate,
+                    sample_size, typical_level)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    sid, comp.name, comp.composition_id, comp.rank_bucket,
+                    comp.region, comp.average_placement, comp.top4_rate,
+                    comp.win_rate, comp.play_rate, comp.sample_size,
+                    comp.typical_level,
+                ),
+            )
+            comp_row = int(cur.lastrowid)
+            self.conn.executemany(
+                "INSERT INTO composition_units (composition_id, unit, role)"
+                " VALUES (?, ?, ?)",
+                [(comp_row, u, "core") for u in sorted(comp.core_units)]
+                + [(comp_row, u, "optional") for u in sorted(comp.optional_units)],
+            )
+            self.conn.executemany(
+                "INSERT INTO composition_items (composition_id, item) VALUES (?, ?)",
+                [(comp_row, i) for i in sorted(comp.preferred_items)],
+            )
+            self.conn.executemany(
+                "INSERT INTO composition_augments (composition_id, augment)"
+                " VALUES (?, ?)",
+                [(comp_row, a) for a in sorted(comp.augment_preferences)],
+            )
+
+    def _copy_comp_section(self, prev_sid: int, sid: int) -> None:
+        rows = self.conn.execute(
+            "SELECT * FROM compositions WHERE snapshot_id = ?", (prev_sid,)
+        ).fetchall()
+        for r in rows:
+            cur = self.conn.execute(
+                """INSERT INTO compositions
+                   (snapshot_id, name, composition_id, rank_bucket, region,
+                    average_placement, top4_rate, win_rate, play_rate,
+                    sample_size, typical_level)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    sid, r["name"], r["composition_id"], r["rank_bucket"],
+                    r["region"], r["average_placement"], r["top4_rate"],
+                    r["win_rate"], r["play_rate"], r["sample_size"],
+                    r["typical_level"],
+                ),
+            )
+            new_id = int(cur.lastrowid)
+            for table, col in (
+                ("composition_units", "unit"),
+                ("composition_items", "item"),
+                ("composition_augments", "augment"),
+            ):
+                extra = ", role" if table == "composition_units" else ""
+                extra_sel = ", role" if table == "composition_units" else ""
+                self.conn.execute(
+                    f"""INSERT INTO {table} (composition_id, {col}{extra})
+                        SELECT ?, {col}{extra_sel} FROM {table}
+                        WHERE composition_id = ?""",
+                    (new_id, r["id"]),
+                )
+
+    def _insert_units(self, sid: int, units: list[UnitStats]) -> None:
+        for unit in units:
+            cur = self.conn.execute(
+                """INSERT INTO unit_stats
+                   (snapshot_id, name, star_level, stage, cost,
+                    average_placement, top4_rate, win_rate, play_rate, sample_size)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    sid, unit.name, unit.star_level, unit.stage, unit.cost,
+                    unit.average_placement, unit.top4_rate, unit.win_rate,
+                    unit.play_rate, unit.sample_size,
+                ),
+            )
+            unit_row = int(cur.lastrowid)
+            self.conn.executemany(
+                "INSERT INTO unit_traits (unit_stats_id, trait) VALUES (?, ?)",
+                [(unit_row, t) for t in sorted(unit.traits)],
+            )
+
+    def _copy_unit_section(self, prev_sid: int, sid: int) -> None:
+        rows = self.conn.execute(
+            "SELECT * FROM unit_stats WHERE snapshot_id = ?", (prev_sid,)
+        ).fetchall()
+        for r in rows:
+            cur = self.conn.execute(
+                """INSERT INTO unit_stats
+                   (snapshot_id, name, star_level, stage, cost,
+                    average_placement, top4_rate, win_rate, play_rate, sample_size)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    sid, r["name"], r["star_level"], r["stage"], r["cost"],
+                    r["average_placement"], r["top4_rate"], r["win_rate"],
+                    r["play_rate"], r["sample_size"],
+                ),
+            )
+            self.conn.execute(
+                """INSERT INTO unit_traits (unit_stats_id, trait)
+                   SELECT ?, trait FROM unit_traits WHERE unit_stats_id = ?""",
+                (int(cur.lastrowid), r["id"]),
+            )
 
     # ---- queries (live path) ----------------------------------------------
 

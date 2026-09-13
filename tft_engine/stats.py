@@ -36,8 +36,8 @@ class CompStats:
 @dataclass(frozen=True)
 class UnitStats:
     name: str
-    average_placement: float
-    top4_rate: float
+    average_placement: float = 0.0
+    top4_rate: float = 0.0
     patch: str = ""
     win_rate: float = 0.0
     play_rate: float = 0.0
@@ -53,8 +53,8 @@ class UnitStats:
 @dataclass(frozen=True)
 class ItemStats:
     name: str
-    average_placement: float
-    top4_rate: float
+    average_placement: float = 0.0
+    top4_rate: float = 0.0
     patch: str = ""
     win_rate: float = 0.0
     play_rate: float = 0.0
@@ -92,10 +92,12 @@ class KnowledgeSnapshot:
     patch: str
     source: str
     retrieved_at: str
-    comps: list[CompStats] = field(default_factory=list)
-    units: list[UnitStats] = field(default_factory=list)
-    items: list[ItemStats] = field(default_factory=list)
-    traits: list[TraitStats] = field(default_factory=list)
+    # None = "this source does not provide the section; keep whatever the
+    # active snapshot already has". [] = explicit empty (wipe the section).
+    comps: list[CompStats] | None = None
+    units: list[UnitStats] | None = None
+    items: list[ItemStats] | None = None
+    traits: list[TraitStats] | None = None
 
 
 class StatsProvider(Protocol):
@@ -135,8 +137,8 @@ class InMemoryStatsProvider:
     @classmethod
     def from_snapshot(cls, snapshot: KnowledgeSnapshot) -> "InMemoryStatsProvider":
         return cls(
-            comps=snapshot.comps,
-            units=snapshot.units,
-            items=snapshot.items,
-            traits=snapshot.traits,
+            comps=snapshot.comps or [],
+            units=snapshot.units or [],
+            items=snapshot.items or [],
+            traits=snapshot.traits or [],
         )
