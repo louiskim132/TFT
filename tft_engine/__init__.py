@@ -1,27 +1,45 @@
 from .engine import DecisionEngine
 from .models import (
+    SCHEMA_VERSION,
     ActionType,
     CandidateAction,
+    CombatRecord,
     DecisionResult,
     GameState,
+    OpponentState,
     ScoredAction,
     ShopUnit,
+    TraitState,
     UnitState,
+)
+from .state_io import (
+    StateValidationError,
+    game_state_from_dict,
+    game_state_to_dict,
+    validate_game_state,
 )
 from .stats import CompStats, InMemoryStatsProvider, ItemStats, StatsProvider, UnitStats
 
 __all__ = [
+    "SCHEMA_VERSION",
     "ActionType",
     "CandidateAction",
+    "CombatRecord",
     "CompStats",
     "DecisionEngine",
     "DecisionResult",
     "GameState",
     "InMemoryStatsProvider",
     "ItemStats",
+    "OpponentState",
     "ScoredAction",
     "ShopUnit",
+    "StateValidationError",
     "StatsProvider",
+    "TraitState",
     "UnitState",
     "UnitStats",
+    "game_state_from_dict",
+    "game_state_to_dict",
+    "validate_game_state",
 ]
