@@ -10,9 +10,21 @@ Schema migrations are tracked with PRAGMA user_version.
 from __future__ import annotations
 
 import sqlite3
+import threading
 from pathlib import Path
 
 from .stats import CompStats, ItemStats, KnowledgeSnapshot, TraitStats, UnitStats
+
+def _locked(fn):
+    """Serialize provider calls on the instance RLock (handler threads share
+    one connection)."""
+
+    def wrapper(self: "SQLiteStatsProvider", *args, **kwargs):
+        with self._lock:
+            return fn(self, *args, **kwargs)
+
+    return wrapper
+
 
 _SCHEMA_VERSION = 1
 
@@ -118,7 +130,9 @@ class SQLiteStatsProvider:
         self.path = Path(path)
         if self.path.parent and str(self.path.parent) not in ("", "."):
             self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(str(self.path))
+        # The provider is shared across HTTP handler threads; serialize access.
+        self._lock = threading.RLock()
+        self.conn = sqlite3.connect(str(self.path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA foreign_keys = ON")
         self._migrate()
@@ -147,6 +161,7 @@ class SQLiteStatsProvider:
 
     # ---- ingestion ---------------------------------------------------------
 
+    @_locked
     def apply_snapshot(self, snapshot: KnowledgeSnapshot) -> int:
         """Insert a complete snapshot and atomically make it the active one for
         its patch. Sections left as None on the snapshot inherit the previous
@@ -349,6 +364,7 @@ class SQLiteStatsProvider:
         ).fetchone()
         return int(row["id"]) if row else None
 
+    @_locked
     def get_comps(self, patch: str) -> list[CompStats]:
         sid = self._active_snapshot_id(patch)
         if sid is None:
@@ -411,6 +427,7 @@ class SQLiteStatsProvider:
             for r in rows
         ]
 
+    @_locked
     def get_unit(self, patch: str, name: str) -> UnitStats | None:
         sid = self._active_snapshot_id(patch)
         if sid is None:
@@ -447,6 +464,7 @@ class SQLiteStatsProvider:
             patch=patch,
         )
 
+    @_locked
     def get_item(self, patch: str, name: str) -> ItemStats | None:
         sid = self._active_snapshot_id(patch)
         if sid is None:
@@ -479,6 +497,7 @@ class SQLiteStatsProvider:
             patch=patch,
         )
 
+    @_locked
     def get_traits(self, patch: str) -> list[TraitStats]:
         sid = self._active_snapshot_id(patch)
         if sid is None:
@@ -500,6 +519,7 @@ class SQLiteStatsProvider:
             )
         ]
 
+    @_locked
     def knowledge_status(self) -> dict[str, object]:
         snaps = [
             {
