@@ -1,0 +1,13 @@
+{
+  "name": "obvious_buy_upgrade_pair",
+  "category": "shop",
+  "state": {
+    "patch": "15.5", "stage": "3-2", "hp": 70, "gold": 30, "level": 6,
+    "board": [{"name": "Warwick", "star_level": 2}],
+    "bench": [{"name": "Warwick"}],
+    "shop": [{"name": "Warwick", "cost": 3}, {"name": "Teemo", "cost": 1}]
+  },
+  "expected": [{"type": "buy", "target": "Warwick"}],
+  "unacceptable": [{"type": "buy", "target": "Teemo"}],
+  "notes": "Third Warwick completes a 3-star path; Teemo is irrelevant filler."
+}

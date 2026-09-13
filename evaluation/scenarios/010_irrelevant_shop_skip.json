@@ -1,0 +1,12 @@
+{
+  "name": "irrelevant_shop_skip",
+  "category": "shop",
+  "state": {
+    "patch": "15.5", "stage": "2-4", "hp": 85, "gold": 15, "level": 4,
+    "board": [{"name": "Veigar"}],
+    "shop": [{"name": "Random1", "cost": 2}, {"name": "Random2", "cost": 3}]
+  },
+  "expected": [{"type": "hold"}, {"type": "roll"}],
+  "unacceptable": [{"type": "buy"}],
+  "notes": "No shop unit is owned or comp-relevant: buying anything is wrong."
+}

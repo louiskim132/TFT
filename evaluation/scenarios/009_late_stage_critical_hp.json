@@ -1,0 +1,13 @@
+{
+  "name": "late_stage_critical_hp",
+  "category": "econ",
+  "importance": "high",
+  "state": {
+    "patch": "15.5", "stage": "5-1", "hp": 12, "gold": 30, "level": 7,
+    "board": [{"name": "Jhin"}, {"name": "Ashe"}],
+    "shop": [{"name": "Jhin", "cost": 4}]
+  },
+  "expected": [{"type": "roll"}, {"type": "buy", "target": "Jhin"}],
+  "unacceptable": [{"type": "hold"}],
+  "notes": "12hp late: every gold must convert to board strength now."
+}

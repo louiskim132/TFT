@@ -1,0 +1,12 @@
+{
+  "name": "contested_comp_penalized",
+  "category": "comp",
+  "state": {
+    "patch": "15.5", "stage": "3-5", "hp": 50, "gold": 25, "level": 7,
+    "board": [{"name": "Vi"}, {"name": "Warwick"}, {"name": "Ahri"}, {"name": "Lux"}],
+    "contested_comps": {"Arcane Burst": 3}
+  },
+  "expected": [{"type": "play_comp", "target": "Bruiser Reroll"}],
+  "unacceptable": [{"type": "play_comp", "target": "Arcane Burst"}],
+  "notes": "Equal overlap; Arcane contested by 3 players must lose the top pick."
+}

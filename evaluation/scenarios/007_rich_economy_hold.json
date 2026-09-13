@@ -1,0 +1,12 @@
+{
+  "name": "rich_economy_hold",
+  "category": "econ",
+  "state": {
+    "patch": "15.5", "stage": "3-3", "hp": 80, "gold": 60, "level": 7,
+    "board": [{"name": "Vi", "star_level": 2}, {"name": "Warwick", "star_level": 2}],
+    "shop": [{"name": "Teemo", "cost": 1}]
+  },
+  "expected": [{"type": "hold"}, {"type": "play_comp", "target": "Bruiser Reroll"}],
+  "unacceptable": [{"type": "roll", "target_gold": 0}],
+  "notes": "80hp / 60g: keep interest or commit to the fitting comp; never full-send."
+}

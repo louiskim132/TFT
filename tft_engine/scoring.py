@@ -123,6 +123,7 @@ class ActionScorer:
         relevant_comp_count = sum(1 for comp in self.comps.values() if target in comp.core_units)
         cost = int(action.metadata.get("cost", 0))
 
+        contested = state.contested_unit_count(target)
         features = [
             _feature(
                 "upgrade_potential",
@@ -141,6 +142,12 @@ class ActionScorer:
                 1.0 if state.gold - cost < 10 else 0.0,
                 -0.08,
                 "Purchase reduces low-gold flexibility",
+            ),
+            _feature(
+                "unit_contest",
+                float(contested),
+                -0.05,
+                f"{contested} copies held by opponents",
             ),
         ]
         return self._finish(action, 0.0, features)

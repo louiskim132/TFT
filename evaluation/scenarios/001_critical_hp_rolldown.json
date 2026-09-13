@@ -1,0 +1,14 @@
+{
+  "name": "critical_hp_should_stabilize",
+  "category": "econ",
+  "importance": "high",
+  "state": {
+    "patch": "15.5", "stage": "4-2", "hp": 18, "gold": 42, "level": 7,
+    "board": [{"name": "Vi", "star_level": 2}, {"name": "Warwick", "star_level": 1}],
+    "bench": [{"name": "Blitzcrank"}],
+    "shop": [{"name": "DrMundo", "cost": 4}]
+  },
+  "expected": [{"type": "roll"}],
+  "unacceptable": [{"type": "hold"}],
+  "notes": "At 18hp with a weak board, holding 42g is a catastrophic line. Regression guard for the section-37 bug pattern."
+}
