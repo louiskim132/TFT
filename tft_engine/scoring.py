@@ -3,6 +3,7 @@ from __future__ import annotations
 from math import exp
 
 from .models import ActionType, CandidateAction, GameState, ScoreFeature, ScoredAction
+from .reliability import DEFAULT_PSEUDOCOUNT, shrunk_value
 from .stats import CompStats
 
 
@@ -26,8 +27,20 @@ def _confidence(score: float) -> float:
 
 
 class ActionScorer:
-    def __init__(self, comps: list[CompStats]) -> None:
+    def __init__(
+        self,
+        comps: list[CompStats],
+        shrinkage_k: float = DEFAULT_PSEUDOCOUNT,
+    ) -> None:
         self.comps = {comp.name: comp for comp in comps}
+        self.shrinkage_k = shrinkage_k
+        # Field priors are the symmetric constants of an 8-player lobby:
+        # mean placement 4.5, top4 0.5, win 1/8. Using constants instead of a
+        # computed comp mean keeps a tiny-sample extreme value from dragging
+        # its own prior down (which would defeat the shrinkage).
+        self.prior_placement = 4.5
+        self.prior_top4 = 0.5
+        self.prior_win = 0.125
 
     def score(self, state: GameState, action: CandidateAction) -> ScoredAction:
         if action.action_type == ActionType.PLAY_COMP:
@@ -60,9 +73,14 @@ class ActionScorer:
 
     def _score_comp(self, state: GameState, action: CandidateAction) -> ScoredAction:
         comp = self.comps[action.target or ""]
-        baseline = placement_to_score(comp.average_placement)
-        baseline += (comp.top4_rate - 0.50) * 0.50
-        baseline += (comp.win_rate - 0.125) * 0.30
+        k = self.shrinkage_k
+        n = comp.sample_size
+        avg_placement = shrunk_value(comp.average_placement, n, self.prior_placement, k)
+        top4_rate = shrunk_value(comp.top4_rate, n, self.prior_top4, k)
+        win_rate = shrunk_value(comp.win_rate, n, self.prior_win, k)
+        baseline = placement_to_score(avg_placement)
+        baseline += (top4_rate - 0.50) * 0.50
+        baseline += (win_rate - 0.125) * 0.30
 
         owned = {unit.name for unit in state.board + state.bench}
         overlap = len(owned & comp.core_units)
@@ -71,6 +89,14 @@ class ActionScorer:
         contesters = state.contested_comps.get(comp.name, 0)
 
         features = [
+            # Reliability is recorded in the feature vector (weight 0) so a
+            # future learned model can price it; shrinkage already handles it.
+            _feature(
+                "sample_reliability",
+                n / (n + k) if (n + k) else 0.0,
+                0.0,
+                f"{n} recorded games",
+            ),
             _feature(
                 "unit_overlap",
                 overlap_ratio,
