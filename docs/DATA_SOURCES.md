@@ -12,9 +12,11 @@ gated internal endpoints when a stable sanctioned source exists.**
 | Community Dragon | Set catalog: units (name, cost, traits), traits (breakpoints), items (recipes), augments | Public versioned JSON, no auth | **Selected — first adapter** |
 | Riot Games API | Raw matches, league entries, summoner lookup | Free dev key, documented rate limits | Future `OwnDataAdapter` |
 | MetaBot.GG MCP | Live comp stats: name, tier, win rate, pick rate, avg placement, unit lists | Public MCP endpoint, no auth, ~60 rpm | **Selected — stats adapter (implemented)** |
-| MetaTFT | Aggregated comp stats (`comps_data`, `comps_stats`) | Endpoints exist but now gated/404 without permit | Blocked — revisit with access |
-| tactics.tools | Rich conditional stats (unit/item/holder) | Undocumented internal API | Not selected — access unclear |
-| Mobalytics | Tier lists, guides | Undocumented | Not selected — access unclear |
+| TFTactics.gg | Comp tier + playstyle tag (Slow Roll(5)/Fast 8), unit rosters, **per-unit recommended items**; augment catalog w/ tier; roll-odds table; global item tier list | Server-rendered HTML, no auth | **Selected — structure adapter (implemented)** |
+| LoLCHESS | `__NEXT_DATA__` JSON: current guide decks (boards w/ positions, stars, items, augments); meta stats with real sample sizes | Embedded JSON in page HTML | Partial — embedded stats verified **stale** (set 11 while live is set 18); guide decks current. Revisit as adapter if fresh stats reachable |
+| MetaTFT | Aggregated comp stats (`comps_data`, `comps_stats`); augments w/ stats; early boards in-app | Endpoints exist but now gated/404; SPA shell only | Blocked — revisit with access |
+| tactics.tools | Rich conditional stats (unit/item/holder); static set bundles at `ap.tft.tools/static/s{N}/data.js` | Undocumented internal API; static JS accessible | Not selected — API undiscovered, bundles usable as fallback catalog |
+| Mobalytics | Tier lists, augment lists, per-comp guides | Bot-protected (403 to non-browser UA); data via internal XHR | Not selected — access unclear |
 
 ## Community Dragon (selected)
 
@@ -79,20 +81,48 @@ gated internal endpoints when a stable sanctioned source exists.**
 - **Verdict:** highest-value stats source *if* access is granted. Do not
   scrape the site frontend. Revisit via their official channels.
 
-## tactics.tools / Mobalytics (not selected)
+## TFTactics.gg (implemented — `ingest/tftactics.py`)
 
-Both serve excellent stats through undocumented internal APIs whose
-stability and terms are unclear. Per the project rule above, they are not
-foundations. Re-evaluate if either publishes a supported export.
+- **Endpoint:** `https://tftactics.gg/tierlist/team-comps/` — server-rendered
+  HTML; each `team-portrait` card carries rank (S/A/B/C), comp name, a
+  playstyle tag (`Slow Roll (5)`, `Fast 8`, `Fast 9`, `Standard`,
+  `Augment`, `Emblem`), unit roster, and **per-unit recommended items**.
+- **Verified:** 2026-09-13 — 6 comp cards parsed live; additional tabs
+  confirmed: `/tierlist/augments/` + `/db/augments/` (augment catalog with
+  Silver/Gold/Prismatic tiers), `/tierlist/items/` (S/A/B item tier list),
+  `/db/rolling/` (level-by-level shop odds table).
+- **Limitations:** no performance statistics on the tier page — provides
+  structure only (roster, item priorities, level plan via playstyle tag);
+  HTML structure is unofficial and may drift. Requires a non-strict TLS
+  context (Netlify "Root YE" cross-sign breaks OpenSSL strict mode; chain
+  still signature-verified).
+- **Role:** enriches MetaBot stats with `rank_bucket`, `typical_level`,
+  `preferred_items` via `merge_comp_sources` (roster overlap >= 50%);
+  unmatched TFTactics comps enter at neutral prior (n=0 → shrunk).
+
+## LoLCHESS / MetaTFT / Mobalytics (not selected)
+
+- **LoLCHESS** (`lolchess.gg/meta`) embeds `__NEXT_DATA__` JSON: current
+  set-18 guide decks (full boards: positions, stars, per-unit items,
+  augment picks) and `metaDeckExaltedStats` with **real sample sizes**
+  (plays/wins/tops/avgPlacement/pickRate). Verified 2026-09-13: the
+  embedded stats payload is **stale** (patch 14.14, set 11) — usable only
+  if a fresh-stats route is found; guide decks remain current and could
+  supply augment_preferences/item data later.
+- **MetaTFT**: `/comps` + `/augments` are JS-only SPA shells (4KB, no data);
+  historical `api2.metatft.com/tft-comps-api/*` endpoints return 404.
+- **Mobalytics**: 403 to non-browser user agents; data loads via internal
+  XHR — no stable ingestion surface.
 
 ## Decision
 
-Two adapters, one pipeline (`--source full`):
+Three adapters, one pipeline (`--source full`):
 
 1. **Community Dragon** — unit/trait/item catalog per set (statics).
-2. **MetaBot.GG MCP** — live comp priors (win/pick rates, avg placement,
-   tiers, unit rosters) layered onto the same patch via snapshot section
-   inheritance.
+2. **MetaBot.GG MCP + TFTactics.gg** — comps merged in one snapshot:
+   MetaBot supplies performance stats (win/pick rates, avg placement);
+   TFTactics supplies tier, tempo/level tag, and per-unit item priorities.
 
 Next sources by value: Riot match-v1 crawler (own data, real sample sizes,
-conditional stats) → authorized MetaTFT access (rich per-rank breakdowns).
+conditional stats) → authorized MetaTFT access (rich per-rank breakdowns)
+→ LoLCHESS fresh-stats route (if discovered).

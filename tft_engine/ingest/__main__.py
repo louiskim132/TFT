@@ -5,16 +5,23 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 
 from ..sqlite_provider import SQLiteStatsProvider
+from ..stats import KnowledgeSnapshot
 from .cdragon import CommunityDragonAdapter
 from .metabot import MetaBotAdapter
-from .pipeline import run_ingestion
+from .pipeline import merge_comp_sources, run_ingestion
+from .tftactics import TFTacticsAdapter
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="tft_engine.ingest")
-    ap.add_argument("--source", choices=["cdragon", "metabot", "full"], required=True)
+    ap.add_argument(
+        "--source",
+        choices=["cdragon", "metabot", "tftactics", "full"],
+        required=True,
+    )
     ap.add_argument("--patch", required=True, help="patch label, e.g. 18.1")
     ap.add_argument("--set", dest="set_number", type=int, default=None,
                     help="TFT set number; defaults to latest in payload")
@@ -32,7 +39,9 @@ def main(argv: list[str] | None = None) -> int:
             catalog = provider.get_units(args.patch)
             adapter = MetaBotAdapter(patch=args.patch, catalog_units=catalog)
             results = [run_ingestion(adapter, provider)]
-        else:  # full: catalog first, then comp stats on top
+        elif args.source == "tftactics":
+            results = [run_ingestion(TFTacticsAdapter(patch=args.patch), provider)]
+        else:  # full: catalog first, then merged stats + structure on top
             results = [
                 run_ingestion(
                     CommunityDragonAdapter(
@@ -44,11 +53,27 @@ def main(argv: list[str] | None = None) -> int:
                 )
             ]
             catalog = provider.get_units(args.patch)
+            mb_adapter = MetaBotAdapter(patch=args.patch, catalog_units=catalog)
+            tft_adapter = TFTacticsAdapter(patch=args.patch)
+            merged_comps = merge_comp_sources(
+                mb_adapter.parse(mb_adapter.fetch()).comps or [],
+                tft_adapter.parse(tft_adapter.fetch()).comps or [],
+            )
+            merged = KnowledgeSnapshot(
+                patch=args.patch,
+                source="metabot_gg+tftactics",
+                retrieved_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                comps=merged_comps,
+            )
+            snapshot_id = provider.apply_snapshot(merged)
             results.append(
-                run_ingestion(
-                    MetaBotAdapter(patch=args.patch, catalog_units=catalog),
-                    provider,
-                )
+                {
+                    "snapshot_id": snapshot_id,
+                    "patch": merged.patch,
+                    "source": merged.source,
+                    "retrieved_at": merged.retrieved_at,
+                    "counts": {"comps": len(merged.comps or [])},
+                }
             )
     print(json.dumps(results[0] if len(results) == 1 else results, indent=2))
     return 0
