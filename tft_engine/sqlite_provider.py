@@ -465,6 +465,41 @@ class SQLiteStatsProvider:
         )
 
     @_locked
+    def get_units(self, patch: str) -> list[UnitStats]:
+        """All unit records in the active snapshot (prefers aggregated rows)."""
+        sid = self._active_snapshot_id(patch)
+        if sid is None:
+            return []
+        rows = self.conn.execute(
+            "SELECT * FROM unit_stats WHERE snapshot_id = ?", (sid,)
+        ).fetchall()
+        trait_rows = self.conn.execute(
+            """SELECT ut.unit_stats_id, ut.trait FROM unit_traits ut
+               JOIN unit_stats u ON u.id = ut.unit_stats_id
+               WHERE u.snapshot_id = ?""",
+            (sid,),
+        ).fetchall()
+        traits_by_row: dict[int, set[str]] = {}
+        for r in trait_rows:
+            traits_by_row.setdefault(r["unit_stats_id"], set()).add(r["trait"])
+        return [
+            UnitStats(
+                name=r["name"],
+                average_placement=r["average_placement"],
+                top4_rate=r["top4_rate"],
+                win_rate=r["win_rate"],
+                play_rate=r["play_rate"],
+                star_level=r["star_level"],
+                stage=r["stage"],
+                cost=r["cost"],
+                traits=frozenset(traits_by_row.get(r["id"], set())),
+                sample_size=r["sample_size"],
+                patch=patch,
+            )
+            for r in rows
+        ]
+
+    @_locked
     def get_item(self, patch: str, name: str) -> ItemStats | None:
         sid = self._active_snapshot_id(patch)
         if sid is None:

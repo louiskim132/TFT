@@ -103,6 +103,7 @@ class KnowledgeSnapshot:
 class StatsProvider(Protocol):
     def get_comps(self, patch: str) -> list[CompStats]: ...
     def get_unit(self, patch: str, name: str) -> UnitStats | None: ...
+    def get_units(self, patch: str) -> list[UnitStats]: ...
     def get_item(self, patch: str, name: str) -> ItemStats | None: ...
     def get_traits(self, patch: str) -> list[TraitStats]: ...
 
@@ -127,6 +128,9 @@ class InMemoryStatsProvider:
 
     def get_unit(self, patch: str, name: str) -> UnitStats | None:
         return self._units.get(name)
+
+    def get_units(self, patch: str) -> list[UnitStats]:
+        return list(self._units.values())
 
     def get_item(self, patch: str, name: str) -> ItemStats | None:
         return self._items.get(name)

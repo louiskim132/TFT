@@ -23,10 +23,10 @@ current-patch statistical priors + contextual adjustment in <500ms.
 
 ## Next (rough priority)
 
-1. **Real stats adapter.** Comp priors are still fixture data. Options in
-   DATA_SOURCES.md order: MetaBot.GG MCP spot feed → Riot match-v1 own-data
-   crawler → authorized MetaTFT access. Without this, comp baselines are
-   not real.
+1. ~~Real stats adapter~~ **Done** — MetaBot.GG MCP feeds live comp priors
+   (win/pick rates, avg placement, unit rosters). Remaining gap: only ~8
+   top-meta comps per pull and no upstream sample sizes (nominal N=1000).
+   Deeper coverage needs Riot match-v1 own-data or authorized MetaTFT.
 2. **Confidence model (Phase 9).** Replace sigmoid(|score|) with margin- +
    reliability-aware confidence; this is the gate for Tier-2 search.
 3. **Action coverage.** SELL, LEVEL/PRELEVEL, SLAM, MOVE_ITEM candidates;
