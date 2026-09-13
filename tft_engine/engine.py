@@ -17,7 +17,9 @@ class DecisionEngine:
         started = perf_counter()
         comps = self.stats_provider.get_comps(state.patch)
         candidates = generate_candidates(state, comps)
-        scorer = ActionScorer(comps)
+        scorer = ActionScorer(
+            comps, unit_lookup=lambda name: self.stats_provider.get_unit(state.patch, name)
+        )
         scored = [scorer.score(state, action) for action in candidates]
         scored.sort(key=lambda item: item.score, reverse=True)
         elapsed_ms = (perf_counter() - started) * 1000.0

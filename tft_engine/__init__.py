@@ -1,3 +1,4 @@
+from .comp_eval import CompEvaluation, CompEvaluator, evaluate_comps
 from .engine import DecisionEngine
 from .models import (
     SCHEMA_VERSION,
@@ -33,6 +34,8 @@ __all__ = [
     "ActionType",
     "CandidateAction",
     "CombatRecord",
+    "CompEvaluation",
+    "CompEvaluator",
     "CompStats",
     "DecisionEngine",
     "DecisionResult",
@@ -49,6 +52,7 @@ __all__ = [
     "TraitStats",
     "UnitState",
     "UnitStats",
+    "evaluate_comps",
     "game_state_from_dict",
     "game_state_to_dict",
     "validate_game_state",

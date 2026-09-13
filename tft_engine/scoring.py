@@ -31,9 +31,11 @@ class ActionScorer:
         self,
         comps: list[CompStats],
         shrinkage_k: float = DEFAULT_PSEUDOCOUNT,
+        unit_lookup=None,
     ) -> None:
         self.comps = {comp.name: comp for comp in comps}
         self.shrinkage_k = shrinkage_k
+        self.unit_lookup = unit_lookup
         # Field priors are the symmetric constants of an 8-player lobby:
         # mean placement 4.5, top4 0.5, win 1/8. Using constants instead of a
         # computed comp mean keeps a tiny-sample extreme value from dragging
@@ -72,62 +74,26 @@ class ActionScorer:
         )
 
     def _score_comp(self, state: GameState, action: CandidateAction) -> ScoredAction:
-        comp = self.comps[action.target or ""]
-        k = self.shrinkage_k
-        n = comp.sample_size
-        avg_placement = shrunk_value(comp.average_placement, n, self.prior_placement, k)
-        top4_rate = shrunk_value(comp.top4_rate, n, self.prior_top4, k)
-        win_rate = shrunk_value(comp.win_rate, n, self.prior_win, k)
-        baseline = placement_to_score(avg_placement)
-        baseline += (top4_rate - 0.50) * 0.50
-        baseline += (win_rate - 0.125) * 0.30
+        # Delegates to CompEvaluator so live PLAY_COMP scoring and the
+        # comp-analysis surface share one implementation.
+        from .comp_eval import CompEvaluator
 
-        owned = {unit.name for unit in state.board + state.bench}
-        overlap = len(owned & comp.core_units)
-        overlap_ratio = overlap / len(comp.core_units) if comp.core_units else 0.0
-        item_overlap = len(set(state.completed_items) & comp.preferred_items)
-        contesters = state.contested_comps.get(comp.name, 0)
-
-        features = [
-            # Reliability is recorded in the feature vector (weight 0) so a
-            # future learned model can price it; shrinkage already handles it.
-            _feature(
-                "sample_reliability",
-                n / (n + k) if (n + k) else 0.0,
-                0.0,
-                f"{n} recorded games",
-            ),
-            _feature(
-                "unit_overlap",
-                overlap_ratio,
-                0.70,
-                f"{overlap} core units already owned",
-            ),
-            _feature(
-                "item_fit",
-                float(item_overlap),
-                0.12,
-                f"{item_overlap} preferred completed items",
-            ),
-            _feature(
-                "contest",
-                float(contesters),
-                -0.22,
-                f"{contesters} players contesting this line",
-            ),
-        ]
-
-        if state.hp <= 30:
-            features.append(
-                _feature(
-                    "low_hp_immediacy",
-                    overlap_ratio,
-                    0.25,
-                    "Low HP rewards lines close to immediate completion",
-                )
-            )
-
-        return self._finish(action, baseline, features)
+        evaluator = CompEvaluator(
+            list(self.comps.values()),
+            unit_lookup=self.unit_lookup,
+            shrinkage_k=self.shrinkage_k,
+        )
+        ev = evaluator.evaluate(state, action.target or "")
+        context = sum(f.contribution for f in ev.features)
+        return ScoredAction(
+            action=action,
+            score=ev.score,
+            baseline_score=ev.baseline,
+            context_score=context,
+            confidence=_confidence(ev.score),
+            features=ev.features,
+            reasons=ev.reasons,
+        )
 
     def _score_roll(self, state: GameState, action: CandidateAction) -> ScoredAction:
         target_gold = action.target_gold if action.target_gold is not None else state.gold
