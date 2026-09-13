@@ -61,16 +61,31 @@ pytest
 
 `tft_engine.json_api.decision_to_dict()` provides the initial boundary for a future HTTP/plugin endpoint. A future service can accept a JSON game state, construct `GameState`, call `DecisionEngine`, and return the serialized decision result without changing core decision logic.
 
+## Current state (post C1–C10)
+
+- **Schema v1** `GameState` with positions, traits, opponents (staleness-aware),
+  history, and `state_confidence`; versioned JSON round-trip.
+- **Knowledge cache** — `SQLiteStatsProvider` with atomic per-patch snapshots;
+  `CommunityDragonAdapter` ingests the live unit/trait/item catalog
+  (`python -m tft_engine.ingest --source cdragon --patch 18.1`).
+- **Scoring** — shrunk meta priors (sample-size aware) + explicit named
+  features; comps evaluated by the shared `CompEvaluator`.
+- **Evaluation** — `python -m evaluation.runner` (10 scenarios; top-1/top-3/
+  catastrophic/latency).
+- **API** — `python -m tft_engine.api [--db data/tft.db]` serves
+  `POST /decision`, `GET /health`, `GET /knowledge/status`.
+
+Docs: `docs/ARCHITECTURE.md`, `docs/DATA_SOURCES.md`, `docs/SCORING.md`,
+`docs/EVALUATION.md`, `docs/ROADMAP.md`.
+
 ## Next milestones
 
-1. Add SQLite-backed cached statistics and normalized source schemas.
-2. Implement ingestion adapters for approved/available TFT data sources.
-3. Expand candidate generation for leveling, item slams, board swaps, and partial rolldowns.
-4. Add stage/level/shop-odds aware upgrade probability.
-5. Add lobby/scouting features and opponent pressure.
-6. Calibrate action confidence from observed decision regret/outcomes.
-7. Expose the engine as a small hosted API suitable for a ChatGPT plugin/action.
-8. Only then add screen-state extraction; direct game input automation remains separate.
+1. Real performance-statistics adapter (comp priors are fixture data until then).
+2. Margin/reliability-aware confidence → gates deeper search.
+3. SELL/LEVEL/SLAM/MOVE_ITEM candidates + item-slam scoring.
+4. Exact shop-odds roll model feeding `roll_efficiency`.
+5. Decision logging → sealed holdout → learned weights, in that order.
+6. Only then screen-state extraction; input automation stays out of scope.
 
 ## Design constraint
 
