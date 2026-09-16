@@ -33,8 +33,14 @@ SHOP_PORTRAIT_TOP = 0.840
 SHOP_PORTRAIT_H = 0.095
 
 ICON_SIZE = 64
-# A match below this MSE is treated as reliable; above it the name is a guess.
-CONFIDENT_MSE = 0.02
+# Name-strip MSE: JPEG noise puts same-card cross-frame error around 0.01;
+# different champions land >0.025. Between is a "probable" grey zone.
+CONFIDENT_MSE = 0.015
+# Bottom fraction of the card interior holding name+cost — glyph shapes are
+# the most discriminative region and survive compression best.
+NAME_STRIP_TOP = 0.72
+# Empty slots render a flat dark card; variance stays near zero.
+EMPTY_VAR = 0.004
 
 
 @dataclass(frozen=True)
@@ -43,10 +49,11 @@ class Match:
     mse: float
     runner_up: str | None
     runner_up_mse: float
+    empty: bool = False
 
     @property
     def confident(self) -> bool:
-        return self.mse < CONFIDENT_MSE
+        return not self.empty and self.mse < CONFIDENT_MSE
 
 
 class IconLibrary:
@@ -76,16 +83,44 @@ class IconLibrary:
         )
 
     def match(self, crop: np.ndarray) -> Match:
+        """`crop` is an ICON_SIZE² probe resized from the card box. Card mode
+        compares binarized name strips against *named* templates only —
+        Empty* handling lives in detect_shop so jittered flat regions can't
+        win the argmin."""
+        if self.mode == "card":
+            cut = int(ICON_SIZE * NAME_STRIP_TOP)
+            probe = (crop[cut:].mean(axis=2) > 0.35).astype(np.float32)
+            pool = {
+                n: (t[cut:].mean(axis=2) > 0.35).astype(np.float32)
+                for n, t in self.templates.items()
+                if not n.startswith("Empty")
+            }
+        else:
+            probe, pool = crop, self.templates
         best, second = None, None
         best_mse, second_mse = float("inf"), float("inf")
-        for name, tpl in self.templates.items():
-            mse = float(np.mean((crop - tpl) ** 2))
+        for name, ref in pool.items():
+            mse = float(np.mean((probe - ref) ** 2))
             if mse < best_mse:
                 second, second_mse = best, best_mse
                 best, best_mse = name, mse
             elif mse < second_mse:
                 second, second_mse = name, mse
         return Match(best, best_mse, second, second_mse)
+
+    def is_empty(self, crop: np.ndarray) -> bool:
+        """Flat render, or a saved Empty* card-back template matches."""
+        if float(crop.var()) < EMPTY_VAR:
+            return True
+        cut = int(ICON_SIZE * NAME_STRIP_TOP)
+        probe = (crop[cut:].mean(axis=2) > 0.35).astype(np.float32)
+        for n, t in self.templates.items():
+            if not n.startswith("Empty"):
+                continue
+            ref = (t[cut:].mean(axis=2) > 0.35).astype(np.float32)
+            if float(np.mean((probe - ref) ** 2)) < CONFIDENT_MSE:
+                return True
+        return False
 
 
 def _crop_fraction(img: Image.Image, box: tuple[float, float, float, float]) -> np.ndarray:
@@ -100,12 +135,34 @@ def _crop_fraction(img: Image.Image, box: tuple[float, float, float, float]) -> 
 
 
 def detect_shop(img: Image.Image, lib: IconLibrary) -> list[Match]:
-    """One Match per shop slot (5 slots, left to right)."""
+    """One Match per shop slot (5 slots, left to right). Shop row position
+    shifts a few px between phases/resolutions — card mode searches a small
+    (dx, dy) neighborhood and keeps the best-scoring offset."""
     left0, top, cw, ch = lib.slot_box
     out: list[Match] = []
     for i in range(5):
         left = left0 + i * SHOP_CARD_STRIDE
-        out.append(lib.match(_crop_fraction(img, (left, top, left + cw, top + ch))))
+        if lib.mode == "card":
+            best: Match | None = None
+            for dy in range(-4, 5):
+                t = top + dy / img.size[1]
+                for dx in range(-28, 29, 4):  # includes 0
+                    l = left + dx / img.size[0]
+                    m = lib.match(
+                        _crop_fraction(img, (l, t, l + cw, t + ch))
+                    )
+                    if best is None or m.mse < best.mse:
+                        best = m
+            # Empty is a separate decision at the canonical box — jittered
+            # flat regions would otherwise outscore real matches.
+            canonical = _crop_fraction(img, (left, top, left + cw, top + ch))
+            if best is not None and not best.confident and lib.is_empty(canonical):
+                best = Match(None, 0.0, best.name, best.mse, empty=True)
+            out.append(best)
+        else:
+            out.append(
+                lib.match(_crop_fraction(img, (left, top, left + cw, top + ch)))
+            )
     return out
 
 

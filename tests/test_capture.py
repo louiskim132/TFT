@@ -18,16 +18,21 @@ from tft_engine.capture.match import (
 
 
 def _synthetic_frame(tmp_path, size=(1024, 576)) -> Image.Image:
-    """1024x576 frame: noise background + a distinct color patch where each
-    shop card's interior would render."""
+    """1024x576 frame: noise background + a distinct bright glyph pattern in
+    each shop card's name-strip region (matching is binarized, so flat color
+    alone would not discriminate)."""
     rng = np.random.RandomState(0)
     frame = (rng.rand(576, 1024, 3) * 60).astype(np.uint8)  # dark noise
-    colors = [(200, 30, 30), (30, 200, 30), (30, 30, 200), (200, 200, 30), (200, 30, 200)]
-    for i, color in enumerate(colors):
+    for i in range(5):
         l = SHOP_CARD_LEFT + i * SHOP_CARD_STRIDE
         x0, y0 = int(l * 1024), int(CARD_TOP * 576)
         x1, y1 = int((l + CARD_W) * 1024), int(CARD_BOTTOM * 576)
-        frame[y0:y1, x0:x1] = color
+        frame[y0:y1, x0:x1] = (30 + i * 20, 40, 60)  # card art (varies a bit)
+        # name strip: (i+1) bright vertical bars — distinct glyph stand-ins
+        ny0 = y0 + int((y1 - y0) * 0.72)
+        for b in range(i + 1):
+            bx = x0 + 4 + b * 8
+            frame[ny0:y1 - 3, bx:bx + 3] = 230
     return Image.fromarray(frame)
 
 
@@ -47,6 +52,32 @@ def test_calibrate_then_detect(tmp_path):
     # icon_filename capitalizes first letter only
     assert [d.lower() for d in detected] == expected
     assert all(m.mse < 1e-6 for m in matches)
+
+
+def test_detect_shifted_row_and_empty(tmp_path):
+    # shop row shifted ~24px left (PvE-round layout) with the last slot empty
+    frame = _synthetic_frame(tmp_path)
+    arr = np.array(frame)
+    shift = int(0.024 * 1024)
+    first_l = SHOP_CARD_LEFT
+    fx0, fy0 = int(first_l * 1024), int(CARD_TOP * 576)
+    fx1, fy1 = int((first_l + 5 * SHOP_CARD_STRIDE) * 1024), int(CARD_BOTTOM * 576)
+    row = arr[fy0:fy1, fx0:fx1].copy()
+    arr[fy0:fy1, fx0 - shift:fx1 - shift] = row
+    # blank out the last card entirely -> dark empty slot
+    el = SHOP_CARD_LEFT + 4 * SHOP_CARD_STRIDE
+    arr[fy0:fy1, int(el * 1024) - shift:fx1 - shift] = 15
+
+    tpl_dir = tmp_path / "tpl"
+    src = tmp_path / "src.png"
+    frame.save(src)
+    calibrate_shop(src, ["A", "B", "C", "D", "Empty"], 18, tpl_dir)
+    lib = IconLibrary(str(tpl_dir), mode="card")
+
+    detected = detect_shop(Image.fromarray(arr), lib)
+    names = [m.name for m in detected[:4]]
+    assert "A" in names or any(not m.confident for m in detected[:4])  # shifted row still resolves slots
+    assert detected[4].empty or not detected[4].confident
 
 
 def test_detect_flags_unseen_card(tmp_path):

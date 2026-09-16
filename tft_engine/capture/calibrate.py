@@ -44,6 +44,8 @@ def calibrate_shop(
     out_dir.mkdir(parents=True, exist_ok=True)
     saved: dict[str, Path] = {}
     for i, name in enumerate(names):
+        if name == "-":  # empty or unidentified slot
+            continue
         l, t, r, b = card_box(i)
         crop = img.crop((int(l * w), int(t * h), int(r * w), int(b * h)))
         path = out_dir / icon_filename(name)
