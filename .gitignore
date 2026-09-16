@@ -4,3 +4,6 @@ __pycache__/
 .venv/
 data/*.db
 data/*.db-*
+
+# downloaded icon cache (regenerable)
+data/icons/
