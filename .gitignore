@@ -7,4 +7,5 @@ data/*.db-*
 
 # downloaded icon cache (regenerable)
 data/icons/
-data/card_templates/
+data/card_templates/**/*.png
+!data/card_templates/*/manifest.json

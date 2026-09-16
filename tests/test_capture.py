@@ -5,16 +5,15 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image
 
-from tft_engine.capture.calibrate import calibrate_shop
-from tft_engine.capture.match import (
-    CARD_BOTTOM,
-    CARD_TOP,
-    CARD_W,
+from tft_engine.capture.calibrate import (
+    FRAME_STRIP_BOTTOM,
+    FRAME_STRIP_TOP,
     SHOP_CARD_LEFT,
     SHOP_CARD_STRIDE,
-    IconLibrary,
-    detect_shop,
+    CARD_W,
+    calibrate_shop,
 )
+from tft_engine.capture.match import IconLibrary, detect_shop
 
 
 def _synthetic_frame(tmp_path, size=(1024, 576)) -> Image.Image:
@@ -25,14 +24,13 @@ def _synthetic_frame(tmp_path, size=(1024, 576)) -> Image.Image:
     frame = (rng.rand(576, 1024, 3) * 60).astype(np.uint8)  # dark noise
     for i in range(5):
         l = SHOP_CARD_LEFT + i * SHOP_CARD_STRIDE
-        x0, y0 = int(l * 1024), int(CARD_TOP * 576)
-        x1, y1 = int((l + CARD_W) * 1024), int(CARD_BOTTOM * 576)
-        frame[y0:y1, x0:x1] = (30 + i * 20, 40, 60)  # card art (varies a bit)
+        x0 = int(l * 1024)
+        x1 = int((l + CARD_W) * 1024)
+        y0, y1 = int(FRAME_STRIP_TOP * 576), int(FRAME_STRIP_BOTTOM * 576)
         # name strip: (i+1) bright vertical bars — distinct glyph stand-ins
-        ny0 = y0 + int((y1 - y0) * 0.72)
         for b in range(i + 1):
             bx = x0 + 4 + b * 8
-            frame[ny0:y1 - 3, bx:bx + 3] = 230
+            frame[y0:y1 - 3, bx:bx + 3] = 230
     return Image.fromarray(frame)
 
 
@@ -59,24 +57,24 @@ def test_detect_shifted_row_and_empty(tmp_path):
     frame = _synthetic_frame(tmp_path)
     arr = np.array(frame)
     shift = int(0.024 * 1024)
-    first_l = SHOP_CARD_LEFT
-    fx0, fy0 = int(first_l * 1024), int(CARD_TOP * 576)
-    fx1, fy1 = int((first_l + 5 * SHOP_CARD_STRIDE) * 1024), int(CARD_BOTTOM * 576)
+    fy0, fy1 = int(FRAME_STRIP_TOP * 576), int(FRAME_STRIP_BOTTOM * 576)
+    fx0 = int(SHOP_CARD_LEFT * 1024)
+    fx1 = int((SHOP_CARD_LEFT + 5 * SHOP_CARD_STRIDE) * 1024)
     row = arr[fy0:fy1, fx0:fx1].copy()
-    arr[fy0:fy1, fx0 - shift:fx1 - shift] = row
-    # blank out the last card entirely -> dark empty slot
+    arr[fy0:fy1, fx0 - shift : fx1 - shift] = row
+    # blank out the last card's strip entirely -> dark empty slot
     el = SHOP_CARD_LEFT + 4 * SHOP_CARD_STRIDE
-    arr[fy0:fy1, int(el * 1024) - shift:fx1 - shift] = 15
+    arr[fy0:fy1, int(el * 1024) - shift : int((el + CARD_W) * 1024) - shift] = 15
 
     tpl_dir = tmp_path / "tpl"
     src = tmp_path / "src.png"
     frame.save(src)
-    calibrate_shop(src, ["A", "B", "C", "D", "Empty"], 18, tpl_dir)
+    calibrate_shop(src, ["A", "B", "C", "D", "E"], 18, tpl_dir)
     lib = IconLibrary(str(tpl_dir), mode="card")
 
     detected = detect_shop(Image.fromarray(arr), lib)
     names = [m.name for m in detected[:4]]
-    assert "A" in names or any(not m.confident for m in detected[:4])  # shifted row still resolves slots
+    assert "A" in names or any(not m.confident for m in detected[:4])
     assert detected[4].empty or not detected[4].confident
 
 
