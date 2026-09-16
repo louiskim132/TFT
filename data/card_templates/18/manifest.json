@@ -3,147 +3,443 @@
  "patch": "18.1",
  "source": "session-shop-bars",
  "images": [
-  "1789593306634054600-21608-10-pasted.png",
-  "1789593306637067500-21608-11-pasted.png",
-  "1789593306640486500-21608-12-pasted.png",
-  "1789593306643762100-21608-13-pasted.png",
-  "1789593306647768700-21608-14-pasted.png",
-  "1789593587538189000-21608-15-pasted.png",
-  "1789593587543217100-21608-16-pasted.png",
-  "1789593587545377300-21608-17-pasted.png",
-  "1789593587547770400-21608-18-pasted.png",
-  "1789593587549767300-21608-19-pasted.png"
+  "140800",
+  "140949",
+  "141053",
+  "141235",
+  "141400",
+  "141517",
+  "141610",
+  "141703",
+  "141819",
+  "141942",
+  "142134",
+  "142245",
+  "142405",
+  "142634",
+  "142745",
+  "142931",
+  "143058",
+  "143203",
+  "143252",
+  "143302",
+  "143313",
+  "143326",
+  "143338",
+  "143457",
+  "143640",
+  "143700",
+  "143756",
+  "143821",
+  "143902",
+  "143938",
+  "143950",
+  "143957",
+  "144007",
+  "144026",
+  "144055",
+  "144124",
+  "144216",
+  "144417",
+  "144933",
+  "145010",
+  "145230",
+  "77-pasted",
+  "78-pasted",
+  "79-pasted"
  ],
+ "verified": "220/235 slots correct, 214 confident (44 raw bars + 3 pasted bars, incl. 1 dimmed shop)",
  "units": {
   "Kobuko": {
-   "image": "1789593587538189000-21608-15-pasted.png",
-   "slot": 3,
-   "cost": 1
+   "image": "140800",
+   "slot": 0,
+   "cost": 1,
+   "variants": 5
   },
   "Varus": {
-   "image": "1789593587543217100-21608-16-pasted.png",
-   "slot": 4,
-   "cost": 1
+   "image": "140800",
+   "slot": 1,
+   "cost": 1,
+   "variants": 6
   },
   "Veigar": {
-   "image": "1789593306634054600-21608-10-pasted.png",
+   "image": "140800",
    "slot": 2,
-   "cost": 1
+   "cost": 1,
+   "variants": 3
   },
   "Rakan": {
-   "image": "1789593306647768700-21608-14-pasted.png",
-   "slot": 0,
-   "cost": 1
+   "image": "140800",
+   "slot": 3,
+   "cost": 1,
+   "variants": 3
   },
   "Leona": {
-   "image": "1789593306634054600-21608-10-pasted.png",
+   "image": "140800",
    "slot": 4,
-   "cost": 1
+   "cost": 1,
+   "variants": 3
   },
   "Rek'Sai": {
-   "image": "1789593306640486500-21608-12-pasted.png",
-   "slot": 2,
-   "cost": 1
+   "image": "140949",
+   "slot": 0,
+   "cost": 1,
+   "variants": 3
   },
   "Gromp": {
-   "image": "1789593587547770400-21608-18-pasted.png",
-   "slot": 2,
-   "cost": 2
+   "image": "140949",
+   "slot": 1,
+   "cost": 2,
+   "variants": 7
   },
   "Alistar": {
-   "image": "1789593306637067500-21608-11-pasted.png",
+   "image": "140949",
    "slot": 2,
-   "cost": 2
+   "cost": 2,
+   "variants": 2
   },
   "Xayah": {
-   "image": "1789593306637067500-21608-11-pasted.png",
-   "slot": 4,
-   "cost": 1
+   "image": "140949",
+   "slot": 3,
+   "cost": 1,
+   "variants": 3
   },
   "Karma": {
-   "image": "1789593587549767300-21608-19-pasted.png",
+   "image": "141053",
    "slot": 0,
-   "cost": 1
+   "cost": 1,
+   "variants": 3
   },
   "LeBlanc": {
-   "image": "1789593306640486500-21608-12-pasted.png",
+   "image": "141053",
    "slot": 3,
-   "cost": 2
+   "cost": 2,
+   "variants": 4
   },
   "Elise": {
-   "image": "1789593587549767300-21608-19-pasted.png",
-   "slot": 3,
-   "cost": 2
+   "image": "141053",
+   "slot": 4,
+   "cost": 2,
+   "variants": 3
   },
   "Pebbles": {
-   "image": "1789593587543217100-21608-16-pasted.png",
-   "slot": 2,
-   "cost": 1
+   "image": "141235",
+   "slot": 0,
+   "cost": 1,
+   "variants": 3
   },
   "Yunara": {
-   "image": "1789593306643762100-21608-13-pasted.png",
+   "image": "141235",
    "slot": 1,
-   "cost": 2
+   "cost": 2,
+   "variants": 4
   },
   "Shen": {
-   "image": "1789593587543217100-21608-16-pasted.png",
-   "slot": 0,
-   "cost": 2
+   "image": "141235",
+   "slot": 3,
+   "cost": 2,
+   "variants": 6
   },
   "Camille": {
-   "image": "1789593587545377300-21608-17-pasted.png",
-   "slot": 2,
-   "cost": 1
+   "image": "141235",
+   "slot": 4,
+   "cost": 1,
+   "variants": 4
   },
   "Sejuani": {
-   "image": "1789593587547770400-21608-18-pasted.png",
-   "slot": 1,
-   "cost": 2
+   "image": "141400",
+   "slot": 3,
+   "cost": 2,
+   "variants": 3
   },
   "Hecarim": {
-   "image": "1789593587538189000-21608-15-pasted.png",
+   "image": "141517",
    "slot": 0,
-   "cost": 3
+   "cost": 3,
+   "variants": 4
   },
   "Mama Beak": {
-   "image": "1789593587543217100-21608-16-pasted.png",
-   "slot": 3,
-   "cost": 3
+   "image": "141517",
+   "slot": 2,
+   "cost": 3,
+   "variants": 8
   },
   "Kog'Maw": {
-   "image": "1789593587549767300-21608-19-pasted.png",
-   "slot": 2,
-   "cost": 3
+   "image": "141517",
+   "slot": 4,
+   "cost": 3,
+   "variants": 4
   },
   "Cinderling": {
-   "image": "1789593587549767300-21608-19-pasted.png",
-   "slot": 4,
-   "cost": 1
+   "image": "141610",
+   "slot": 1,
+   "cost": 1,
+   "variants": 5
   },
   "Teemo": {
-   "image": "1789593587545377300-21608-17-pasted.png",
+   "image": "141703",
    "slot": 0,
-   "cost": 2
+   "cost": 2,
+   "variants": 6
   },
   "Rammus": {
-   "image": "1789593587549767300-21608-19-pasted.png",
+   "image": "141703",
    "slot": 1,
-   "cost": 3
+   "cost": 3,
+   "variants": 5
   },
   "Kayle": {
-   "image": "1789593587545377300-21608-17-pasted.png",
-   "slot": 4,
-   "cost": 2
+   "image": "141703",
+   "slot": 3,
+   "cost": 2,
+   "variants": 3
   },
   "Scuttlecrab": {
-   "image": "1789593587547770400-21608-18-pasted.png",
+   "image": "141819",
    "slot": 0,
-   "cost": 2
+   "cost": 2,
+   "variants": 2
   },
   "Kha'Zix": {
-   "image": "1789593587547770400-21608-18-pasted.png",
+   "image": "141819",
    "slot": 4,
-   "cost": 3
+   "cost": 3,
+   "variants": 4
+  },
+  "Warwick": {
+   "image": "142134",
+   "slot": 1,
+   "cost": 2,
+   "variants": 3
+  },
+  "Akali": {
+   "image": "142134",
+   "slot": 4,
+   "cost": 1,
+   "variants": 3
+  },
+  "Fiddlesticks": {
+   "image": "142245",
+   "slot": 0,
+   "cost": 3,
+   "variants": 6
+  },
+  "Murk Wolf": {
+   "image": "142405",
+   "slot": 0,
+   "cost": 2,
+   "variants": 1
+  },
+  "Yorick": {
+   "image": "142405",
+   "slot": 1,
+   "cost": 1,
+   "variants": 2
+  },
+  "Zyra": {
+   "image": "142634",
+   "slot": 0,
+   "cost": 4,
+   "variants": 4
+  },
+  "Master Yi": {
+   "image": "142634",
+   "slot": 2,
+   "cost": 3,
+   "variants": 3
+  },
+  "Caitlyn": {
+   "image": "142634",
+   "slot": 4,
+   "cost": 2,
+   "variants": 1
+  },
+  "Brambleback": {
+   "image": "142745",
+   "slot": 0,
+   "cost": 4,
+   "variants": 3
+  },
+  "Krug": {
+   "image": "142745",
+   "slot": 1,
+   "cost": 3,
+   "variants": 4
+  },
+  "Ahri": {
+   "image": "142745",
+   "slot": 3,
+   "cost": 4,
+   "variants": 4
+  },
+  "Azir": {
+   "image": "142745",
+   "slot": 4,
+   "cost": 3,
+   "variants": 7
+  },
+  "Ashe": {
+   "image": "143058",
+   "slot": 1,
+   "cost": 5,
+   "variants": 3
+  },
+  "Soraka": {
+   "image": "143058",
+   "slot": 4,
+   "cost": 4,
+   "variants": 3
+  },
+  "Sentinel": {
+   "image": "143203",
+   "slot": 3,
+   "cost": 4,
+   "variants": 5
+  },
+  "Malphite": {
+   "image": "143203",
+   "slot": 4,
+   "cost": 4,
+   "variants": 4
+  },
+  "Rengar": {
+   "image": "143252",
+   "slot": 4,
+   "cost": 3,
+   "variants": 5
+  },
+  "Tristana": {
+   "image": "143302",
+   "slot": 0,
+   "cost": 3,
+   "variants": 3
+  },
+  "Lillia": {
+   "image": "143313",
+   "slot": 1,
+   "cost": 4,
+   "variants": 6
+  },
+  "Sett": {
+   "image": "143313",
+   "slot": 4,
+   "cost": 4,
+   "variants": 5
+  },
+  "Cassiopeia": {
+   "image": "143326",
+   "slot": 3,
+   "cost": 3,
+   "variants": 3
+  },
+  "Maokai": {
+   "image": "143700",
+   "slot": 0,
+   "cost": 5,
+   "variants": 2
+  },
+  "Elder Dragon": {
+   "image": "143700",
+   "slot": 1,
+   "cost": 5,
+   "variants": 2
+  },
+  "Ivern": {
+   "image": "143756",
+   "slot": 1,
+   "cost": 5,
+   "variants": 2
+  },
+  "Vi": {
+   "image": "143821",
+   "slot": 4,
+   "cost": 3,
+   "variants": 2
+  },
+  "Morgana": {
+   "image": "143902",
+   "slot": 0,
+   "cost": 4,
+   "variants": 1
+  },
+  "Ezreal": {
+   "image": "143902",
+   "slot": 1,
+   "cost": 4,
+   "variants": 2
+  },
+  "Lux": {
+   "image": "143950",
+   "slot": 4,
+   "cost": 5,
+   "variants": 2
+  },
+  "Amumu": {
+   "image": "144007",
+   "slot": 0,
+   "cost": 4,
+   "variants": 1
+  },
+  "Sivir": {
+   "image": "144007",
+   "slot": 1,
+   "cost": 4,
+   "variants": 2
+  },
+  "Taric": {
+   "image": "144007",
+   "slot": 3,
+   "cost": 5,
+   "variants": 4
+  },
+  "Diana": {
+   "image": "144007",
+   "slot": 4,
+   "cost": 3,
+   "variants": 2
+  },
+  "Gnar": {
+   "image": "144026",
+   "slot": 0,
+   "cost": 5,
+   "variants": 1
+  },
+  "Nidalee": {
+   "image": "144124",
+   "slot": 3,
+   "cost": 4,
+   "variants": 1
+  },
+  "Aphelios": {
+   "image": "144124",
+   "slot": 4,
+   "cost": 4,
+   "variants": 2
+  },
+  "Ornn": {
+   "image": "144933",
+   "slot": 2,
+   "cost": 1,
+   "variants": 2
+  },
+  "Alune": {
+   "image": "78-pasted",
+   "slot": 4,
+   "cost": 5,
+   "variants": 1
+  },
+  "Draven": {
+   "image": "79-pasted",
+   "slot": 1,
+   "cost": 5,
+   "variants": 1
+  },
+  "Kennen": {
+   "image": "external:1789597300135309300-21608-80-pasted.png",
+   "slot": 0,
+   "cost": 5,
+   "source": "internet card image",
+   "variants": 1
   }
  }
 }

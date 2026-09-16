@@ -47,40 +47,52 @@ def is_shop_bar(img: Image.Image) -> bool:
     return w / h > BAR_MIN_ASPECT
 
 
-def bar_card_columns(img: Image.Image) -> list[tuple[float, float]] | None:
-    """Per-card interior x-ranges, found from the dark separator lines in the
-    name-row band. Paste framing drifts ±10px between screenshots, so the
-    boundaries are detected per image rather than assumed constant."""
+def bar_name_boxes(img: Image.Image) -> list[tuple[float, float, float, float] | None]:
+    """Per-slot bounding box around the card's name glyphs.
+
+    A generous fixed window per slot (covers ~±15px of paste drift) is
+    searched for white text — the name banner is colored, so a min-channel
+    mask isolates glyphs. Returns None for slots with no text (empty)."""
     import numpy as np
 
-    a = np.asarray(img.convert("L"), dtype=np.float32) / 255
-    h, w = a.shape
-    band = a[int(0.84 * h) : int(0.97 * h)]
-    colmean = band.mean(axis=0)
-    seps: list[float] = []
+    rgb = np.asarray(img.convert("RGB"), dtype=np.float32) / 255
+    h, w = rgb.shape[:2]
+    boxes: list[tuple[float, float, float, float] | None] = []
     for k in range(5):
-        exp = BAR_LEFT + k * BAR_STRIDE
-        lo, hi = int((exp - 0.03) * w), int((exp + 0.03) * w)
-        if lo < 0 or hi > w:
-            return None
-        seps.append((lo + int(np.argmin(colmean[lo:hi]))) / w)
-    # card 5's right edge: image edge (the cost digit can sit past the last
-    # separator line), so derive it from the left edge + card width.
-    seps.append(min(0.999, seps[4] + BAR_W + 0.01))
-    border = 4 / w
-    return [(seps[i] + border, seps[i + 1] - border) for i in range(5)]
+        # name sits at the card's left, cost icon far right — the window ends
+        # before the cost digit so only the name glyphs are captured.
+        l0 = int((0.172 + k * BAR_STRIDE) * w)
+        r0 = l0 + int(0.118 * w)
+        t0, b0 = int(0.82 * h), int(0.975 * h)
+        mask = rgb[t0:b0, l0:r0].min(axis=2) > 0.58
+        if int(mask.sum()) < 12:
+            boxes.append(None)
+            continue
+        rows = np.where(mask.any(axis=1))[0]
+        cols = np.where(mask.any(axis=0))[0]
+        # drop the cost icon if it still leaked in at the right edge
+        boxes.append(
+            (
+                (l0 + cols[0]) / w - 0.004,
+                (t0 + rows[0]) / h - 0.01,
+                (l0 + cols[-1]) / w + 0.004,
+                (t0 + rows[-1]) / h + 0.012,
+            )
+        )
+    return boxes
 
 
 def strip_box(
     i: int,
     bar: bool,
-    columns: list[tuple[float, float]] | None = None,
-) -> tuple[float, float, float, float]:
-    """(left, top, right, bottom) of the i-th card's name strip, fractions."""
+    name_boxes: list[tuple[float, float, float, float] | None] | None = None,
+) -> tuple[float, float, float, float] | None:
+    """(left, top, right, bottom) of the i-th card's name strip, fractions.
+    Bar mode uses the detected name-glyph box; returns None for empty slots."""
     if bar:
+        if name_boxes is not None:
+            return name_boxes[i]
         top, bottom = BAR_STRIP_TOP, BAR_STRIP_BOTTOM
-        if columns is not None:
-            return (columns[i][0], top, columns[i][1], bottom)
         left, stride, width = BAR_LEFT, BAR_STRIDE, BAR_W
     else:
         left, top, bottom = SHOP_CARD_LEFT, FRAME_STRIP_TOP, FRAME_STRIP_BOTTOM
@@ -99,16 +111,24 @@ def calibrate_shop(
         raise ValueError(f"expected 5 shop card names, got {len(names)}")
     img = Image.open(image_path)
     bar = is_shop_bar(img)
-    columns = bar_card_columns(img) if bar else None
+    name_boxes = bar_name_boxes(img) if bar else None
     w, h = img.size
     out_dir.mkdir(parents=True, exist_ok=True)
     saved: dict[str, Path] = {}
     for i, name in enumerate(names):
         if name == "-":  # empty or unidentified slot
             continue
-        l, t, r, b = strip_box(i, bar, columns)
+        box = strip_box(i, bar, name_boxes)
+        if box is None:
+            continue  # no name glyphs found at this slot (likely empty)
+        l, t, r, b = box
         crop = img.crop((int(l * w), int(t * h), int(r * w), int(b * h)))
-        path = out_dir / icon_filename(name)
+        base = icon_filename(name)
+        path = out_dir / base
+        k = 2  # keep a variant per observation; min-over-variants at match time
+        while path.exists():
+            path = out_dir / f"{base[:-4]}__{k}.png"
+            k += 1
         crop.save(path)
         saved[name] = path
     return saved
