@@ -34,8 +34,9 @@ file. Exit criteria are measured, not judged.
 
 ### S0 · Stabilize — Oct 1 – Oct 4
 
-- [ ] Q: declare `numpy`, `Pillow` deps; push `main`; CI green —
-      deps declared 10-01; push + CI run pending
+- [x] Q: declare `numpy`, `Pillow` deps; push `main`; CI green —
+      10-01: pushed `27df741`, CI run 36866674478 green (prior run
+      failed on undeclared deps as predicted)
 - [x] Q: commit board-template manifest, gitignore its PNGs (10-01:
       14/65 model crops stored, manifest committed)
 - [x] Q: label 30 held-out frames (`tests/frames/`, JSON sidecar per
@@ -143,4 +144,4 @@ in the client, so only opponent level is tracked.
 | --- | --- |
 | 2026-09-13 | Original roadmap: engine-first, CV deferred (C1–C10 complete) |
 | 2026-10-01 | Audit. The project already pivoted to perception (shop CV, 09-15/16) without a doc update. Roadmap rewritten around the 5 tracks with dated sprints S0–S5. New: held-out frame set, staleness guard, CI repair, live loop, Riot-policy gate before any overlay. Dropped: opponent XP (not observable). |
-| 2026-10-01 | S0 round: 65-unit shop matcher finalized (variants + blur-shift, 220/220 in-sample, ~0.28 s/shop); 14 board-model crops stored under `data/board_templates/18/`; `tests/frames/` created — 41 labeled bars (shop/level/xp/gold/streak); `numpy`+`Pillow` declared; `tft.db` refreshed (snapshot 10); README updated. Remaining: push + CI verification. |
+| 2026-10-01 | S0 round: 65-unit shop matcher finalized (variants + blur-shift, 220/220 in-sample, ~0.28 s/shop); 14 board-model crops stored under `data/board_templates/18/`; `tests/frames/` created — 41 labeled bars (shop/level/xp/gold/streak); `numpy`+`Pillow` declared; `tft.db` refreshed (snapshot 10); README updated. Pushed `27df741` — **CI green on origin/main; S0 exit met.** |
