@@ -2,7 +2,7 @@
  "set": 18,
  "patch": "18.1",
  "source": "session-board-crops",
- "note": "3D board-unit crops incl. health bar + item row; matching TBD vs full board frames",
+ "note": "3D board-unit crops incl. health bar + item row; matching TBD vs full board frames; __suffix = variant label",
  "units": {
   "Ahri": {
    "source": "Raw_Screenshot/3d + pasted crops",
@@ -138,7 +138,11 @@
   },
   "Lux": {
    "source": "Raw_Screenshot/3d + pasted crops",
-   "type": "model-crop"
+   "type": "model-crop",
+   "variants_observed": [
+    "elderwood"
+   ],
+   "variant_source": "trait line on card portrait (\ub098\ubb34\uc815\ub839=Elderwood)"
   },
   "Malphite": {
    "source": "Raw_Screenshot/3d + pasted crops",
