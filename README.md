@@ -12,7 +12,7 @@ The live path is intentionally small and network-free:
 4. Score each action with explicit named features.
 5. Return ranked actions, reasons, confidence proxy, and measured latency.
 
-The engine does **not** yet perform computer vision, mouse/keyboard automation, web scraping, or long-horizon combat simulation.
+The decision engine itself stays network- and I/O-free. Screen-state extraction lives in `tft_engine/capture/` (shop-card detection done; HUD, items, units in progress). Mouse/keyboard automation and combat simulation are out of scope.
 
 ## Architecture
 
@@ -80,12 +80,8 @@ Docs: `docs/ARCHITECTURE.md`, `docs/DATA_SOURCES.md`, `docs/SCORING.md`,
 
 ## Next milestones
 
-1. Real performance-statistics adapter (comp priors are fixture data until then).
-2. Margin/reliability-aware confidence → gates deeper search.
-3. SELL/LEVEL/SLAM/MOVE_ITEM candidates + item-slam scoring.
-4. Exact shop-odds roll model feeding `roll_efficiency`.
-5. Decision logging → sealed holdout → learned weights, in that order.
-6. Only then screen-state extraction; input automation stays out of scope.
+See `docs/ROADMAP.md` (dated sprint plan) and the latest audit in
+`docs/AUDIT_2026-10-01.md`.
 
 ## Design constraint
 
