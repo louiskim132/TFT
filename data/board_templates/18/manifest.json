@@ -4,60 +4,156 @@
  "source": "session-board-crops",
  "note": "3D board-unit crops incl. health bar; matching TBD vs full board frames",
  "units": {
+  "Ahri": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
   "Akali": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Azir": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Brambleback": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Caitlyn": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Camille": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Cassiopeia": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Diana": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Elise": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Ezreal": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Fiddlesticks": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Gromp": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Hecarim": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Karma": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Kayle": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Khazix": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Kogmaw": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Krug": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Leblanc": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Leona": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Mamabeak": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Murkwolf": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Nidalee": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Ornn": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Rakan": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Rammus": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Rengar": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Scuttlecrab": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Shen": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Teemo": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Tristana": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Varus": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Veigar": {
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Vi": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Warwick": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Xayah": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   },
   "Yorick": {
-   "source": "Raw_Screenshot/3d",
+   "source": "Raw_Screenshot/3d + pasted crops",
+   "type": "model-crop"
+  },
+  "Zyra": {
+   "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop"
   }
  }
