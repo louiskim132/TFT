@@ -61,8 +61,20 @@ pytest
 
 `tft_engine.json_api.decision_to_dict()` provides the initial boundary for a future HTTP/plugin endpoint. A future service can accept a JSON game state, construct `GameState`, call `DecisionEngine`, and return the serialized decision result without changing core decision logic.
 
-## Current state (post C1–C10)
+## Current state (rev. 2026-10-01)
 
+The project is **perception-first**: the engine core is built, and current
+work is turning screenshots into `GameState` fields with confidence.
+
+- **Shop-card detection** — all 65 set-18 units calibrated
+  (`data/card_templates/18/`, Korean client). Binarized name strips,
+  per-slot white-text windows, variant templates + blurred shift-tolerant
+  matching. 220/220 slots correct on the calibration corpus (in-sample;
+  held-out measurement lives in `tests/frames/`).
+- **Held-out frames** — `tests/frames/`: 41 labeled shop bars (shop, level,
+  XP, gold, streak per frame). Do not tune matchers against them.
+- **Board units** — `data/board_templates/18/`: 14/65 3D model crops;
+  matcher not built yet (S3, highest risk).
 - **Schema v1** `GameState` with positions, traits, opponents (staleness-aware),
   history, and `state_confidence`; versioned JSON round-trip.
 - **Knowledge cache** — `SQLiteStatsProvider` with atomic per-patch snapshots;

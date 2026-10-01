@@ -1,0 +1,38 @@
+{
+ "image": "\uc2a4\ud06c\ub9b0\uc0f7 2026-09-16 141610.png",
+ "type": "shop_bar",
+ "set": 18,
+ "client_lang": "ko",
+ "fields": {
+  "shop": [
+   "Shen",
+   "Cinderling",
+   "Pebbles",
+   "Mama Beak",
+   "Varus"
+  ],
+  "level": 5,
+  "xp": {
+   "current": 4,
+   "max": 20
+  },
+  "gold": 31,
+  "streak": {
+   "count": 2,
+   "color": "orange"
+  },
+  "shop_odds": null
+ },
+ "flags": {
+  "dimmed": false,
+  "shop_calibration_in_sample": true
+ },
+ "unlabeled": [
+  "shop_odds",
+  "stage_round",
+  "own_hp",
+  "items",
+  "bench",
+  "board"
+ ]
+}

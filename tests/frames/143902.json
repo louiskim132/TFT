@@ -1,0 +1,38 @@
+{
+ "image": "\uc2a4\ud06c\ub9b0\uc0f7 2026-09-16 143902.png",
+ "type": "shop_bar",
+ "set": 18,
+ "client_lang": "ko",
+ "fields": {
+  "shop": [
+   "Morgana",
+   "Ezreal",
+   "Ahri",
+   "Rengar",
+   "Gromp"
+  ],
+  "level": 9,
+  "xp": {
+   "current": 14,
+   "max": 68
+  },
+  "gold": 55,
+  "streak": {
+   "count": 1,
+   "color": "orange"
+  },
+  "shop_odds": null
+ },
+ "flags": {
+  "dimmed": false,
+  "shop_calibration_in_sample": true
+ },
+ "unlabeled": [
+  "shop_odds",
+  "stage_round",
+  "own_hp",
+  "items",
+  "bench",
+  "board"
+ ]
+}

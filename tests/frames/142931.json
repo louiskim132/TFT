@@ -1,0 +1,38 @@
+{
+ "image": "\uc2a4\ud06c\ub9b0\uc0f7 2026-09-16 142931.png",
+ "type": "shop_bar",
+ "set": 18,
+ "client_lang": "ko",
+ "fields": {
+  "shop": [
+   "Ahri",
+   "Kha'Zix",
+   "Azir",
+   "Kog'Maw",
+   "Gromp"
+  ],
+  "level": 8,
+  "xp": {
+   "current": 10,
+   "max": 68
+  },
+  "gold": 43,
+  "streak": {
+   "count": 2,
+   "color": "orange"
+  },
+  "shop_odds": null
+ },
+ "flags": {
+  "dimmed": false,
+  "shop_calibration_in_sample": true
+ },
+ "unlabeled": [
+  "shop_odds",
+  "stage_round",
+  "own_hp",
+  "items",
+  "bench",
+  "board"
+ ]
+}

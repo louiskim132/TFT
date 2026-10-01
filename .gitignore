@@ -9,3 +9,9 @@ data/*.db-*
 data/icons/
 data/card_templates/**/*.png
 !data/card_templates/*/manifest.json
+data/board_templates/**/*.png
+!data/board_templates/*/manifest.json
+
+# raw screenshot uploads (local-only input data) + debug crops
+Raw_Screenshot/
+data/_*.png

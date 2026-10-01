@@ -1,0 +1,38 @@
+{
+ "image": "\uc2a4\ud06c\ub9b0\uc0f7 2026-09-16 142134.png",
+ "type": "shop_bar",
+ "set": 18,
+ "client_lang": "ko",
+ "fields": {
+  "shop": [
+   null,
+   "Warwick",
+   "Warwick",
+   "Mama Beak",
+   "Akali"
+  ],
+  "level": 6,
+  "xp": {
+   "current": 20,
+   "max": 36
+  },
+  "gold": 51,
+  "streak": {
+   "count": 2,
+   "color": "orange"
+  },
+  "shop_odds": null
+ },
+ "flags": {
+  "dimmed": false,
+  "shop_calibration_in_sample": true
+ },
+ "unlabeled": [
+  "shop_odds",
+  "stage_round",
+  "own_hp",
+  "items",
+  "bench",
+  "board"
+ ]
+}

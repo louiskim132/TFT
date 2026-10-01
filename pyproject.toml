@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Fast, provider-agnostic Teamfight Tactics decision engine"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["numpy>=1.26", "Pillow>=10.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]

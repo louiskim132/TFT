@@ -1,0 +1,38 @@
+{
+ "image": "\uc2a4\ud06c\ub9b0\uc0f7 2026-09-16 145010.png",
+ "type": "shop_bar",
+ "set": 18,
+ "client_lang": "ko",
+ "fields": {
+  "shop": [
+   "Gromp",
+   null,
+   "Leona",
+   "Kobuko",
+   "Cinderling"
+  ],
+  "level": 3,
+  "xp": {
+   "current": 0,
+   "max": 6
+  },
+  "gold": 11,
+  "streak": {
+   "count": 0,
+   "color": "none"
+  },
+  "shop_odds": null
+ },
+ "flags": {
+  "dimmed": false,
+  "shop_calibration_in_sample": true
+ },
+ "unlabeled": [
+  "shop_odds",
+  "stage_round",
+  "own_hp",
+  "items",
+  "bench",
+  "board"
+ ]
+}

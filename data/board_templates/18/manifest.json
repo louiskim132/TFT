@@ -1,0 +1,64 @@
+{
+ "set": 18,
+ "patch": "18.1",
+ "source": "session-board-crops",
+ "note": "3D board-unit crops incl. health bar; matching TBD vs full board frames",
+ "units": {
+  "Akali": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Caitlyn": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Camille": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Hecarim": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Karma": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Khazix": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Leona": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Mamabeak": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Ornn": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Rakan": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Varus": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Warwick": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Xayah": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  },
+  "Yorick": {
+   "source": "Raw_Screenshot/3d",
+   "type": "model-crop"
+  }
+ }
+}
