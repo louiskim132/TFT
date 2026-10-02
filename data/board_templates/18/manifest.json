@@ -140,10 +140,12 @@
    "source": "Raw_Screenshot/3d + pasted crops",
    "type": "model-crop",
    "variants_observed": [
+    "blackthorn",
+    "coven",
     "elderwood",
-    "lunar",
     "fae",
-    "blackthorn"
+    "lunar",
+    "solar"
    ],
    "variant_source": "trait line on card portrait (\ub098\ubb34\uc815\ub839=Elderwood)"
   },
