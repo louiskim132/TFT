@@ -144,10 +144,12 @@
     "coven",
     "elderwood",
     "fae",
+    "inferno",
     "lunar",
     "solar"
    ],
-   "variant_source": "trait line on card portrait (\ub098\ubb34\uc815\ub839=Elderwood)"
+   "variant_source": "trait line on card portrait; no base Lux exists in-game",
+   "variants_total": 9
   },
   "Malphite": {
    "source": "Raw_Screenshot/3d + pasted crops",
