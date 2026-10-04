@@ -155,3 +155,4 @@ in the client, so only opponent level is tracked.
 | 2026-10-01 | P (S3): +3 Lux variants (달빛=Lunar, 요정=Fae, 검은가시=Blackthorn) → 4/10 observed. Trait-name KR→EN map is accumulating: 나무정령=Elderwood. Remaining: base, Blossom, Coven, Inferno, Primal, Solar. |
 | 2026-10-02 | P (S3): +2 Lux variants (악의 여단=Coven, 햇빛=Solar) → 6/10 observed. Remaining: base, Blossom, Inferno, Primal. Board units still 64/65 (Rek'Sai). |
 | 2026-10-03 | P (S3): +1 Lux variant (지옥불=Inferno) → 7/9 observed. **No base Lux exists** — 9 named variants is the full set. Remaining: Blossom, Primal. Board units still 64/65 (Rek'Sai). |
+| 2026-10-03 | P (S3): +1 Lux variant (Primal) → 8/9 observed. Remaining: Blossom only. Board units still 64/65 (Rek'Sai). |

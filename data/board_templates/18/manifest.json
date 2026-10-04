@@ -146,6 +146,7 @@
     "fae",
     "inferno",
     "lunar",
+    "primal",
     "solar"
    ],
    "variant_source": "trait line on card portrait; no base Lux exists in-game",
