@@ -182,21 +182,111 @@ def count_star_pips(portrait: Image.Image, box_h: int | None = None) -> int:
     a = np.asarray(portrait.convert("RGB"), dtype=np.float32) / 255
     h, w, _ = a.shape
     ph = box_h if box_h is not None else h
-    # pip band: the bottom ~8px of the portrait box plus the rows just below
-    y0 = max(0, ph - 8)
-    z = a[y0 : min(h, ph + 5), int(w * 0.15) : int(w * 0.85)]
-    r, g, b = z[..., 0], z[..., 1], z[..., 2]
-    mask = (b > 0.40) & (b > r * 1.08) & (z.sum(axis=2) > 1.15)
+    # pips sit on the portrait's bottom edge: the last ~4 rows plus a sliver
+    # below. Wider bands pick up bright portrait content and merge runs.
+    y0 = max(0, ph - 4)
+    z = a[y0 : min(h, ph + 3), int(w * 0.15) : int(w * 0.85)]
+    r, b = z[..., 0], z[..., 2]
+    # pale blue-white: bright, blue-leaning or neutral
+    mask = (z.sum(axis=2) > 1.35) & (b > r * 0.95)
     cols = mask.sum(axis=0) > 0
-    # each pip is ~3px wide; count column runs
+    # each pip is ~3px wide. Runs >8px are portrait content; 1px runs count
+    # only when strongly blue (b>>r) — a pip clipped by the box edge, not a
+    # warm frame-corner glint.
+    strong = mask & (b > r * 1.15)
+    cols_strong = strong.sum(axis=0) > 0
     pips, run = 0, 0
-    for v in list(cols) + [False]:
+    for i, v in enumerate(list(cols) + [False]):
         if v:
             run += 1
         elif run:
-            pips += 1 if run >= 2 else 0
+            if 2 <= run <= 8 or (run == 1 and cols_strong[i - 1]):
+                pips += 1
             run = 0
     return min(pips, 3)
+
+
+# ---------------------------------------------------------------- trait panel
+# The left HUD strip lists active traits: hex icon, count badge, name, and
+# threshold progress (e.g. "2 > 4 > 6"). Rows are evenly spaced from ~y0.22.
+# Icon tone signals state: colored = active tier, gray = below threshold.
+# Lux-variant traits (개화/햇빛/검은 가시/원시/…) appear here — the variant
+# evidence source noted in the board-template manifest.
+TRAIT_ROW_TOP = 0.222
+TRAIT_ROW_STRIDE = 0.0455
+TRAIT_MAX_ROWS = 12
+TRAIT_ICON = (0.034, 0.049)  # hex icon (saturated)
+TRAIT_COUNT = (0.049, 0.058)  # dark badge with white count digit
+TRAIT_NAME = (0.059, 0.150)  # white name text (thresholds on the row below)
+
+
+@dataclass(frozen=True)
+class TraitRow:
+    y: int
+    icon: Image.Image
+    name: Image.Image
+    active: bool  # icon is colored/bright rather than dark gray
+
+
+def trait_rows(img: Image.Image) -> list[TraitRow]:
+    """Extract each visible trait row: icon + name crops, active flag.
+
+    A row exists when its name band holds white glyph pixels (the panel
+    shows only relevant traits — trailing rows are absent)."""
+    rgb = np.asarray(img.convert("RGB"), dtype=np.float32) / 255
+    h, w = rgb.shape[:2]
+    out: list[TraitRow] = []
+    for k in range(TRAIT_MAX_ROWS):
+        y = int((TRAIT_ROW_TOP + k * TRAIT_ROW_STRIDE) * h)
+        rh = int(0.040 * h)
+        nx0, nx1 = int(TRAIT_NAME[0] * w), int(TRAIT_NAME[1] * w)
+        band = rgb[y : y + rh, nx0:nx1]
+        # white name glyphs: high min-channel (inactive rows render dimmer)
+        if int((band.min(axis=2) > 0.35).sum()) < 8:
+            break
+        ix0, ix1 = int(TRAIT_ICON[0] * w), int(TRAIT_ICON[1] * w)
+        icon = img.crop((ix0, y, ix1, y + rh)).convert("RGB")
+        arr = np.asarray(icon, dtype=np.float32) / 255
+        # rows past the list ("1+ more" footer, other UI) have no icon
+        if float(arr.std()) < 0.03:
+            break
+        name = img.crop((nx0, y, nx1, y + rh))
+        # active tiers render colored icons (sat ~0.08-0.20); below-threshold
+        # rows go grayscale (sat ~0.01-0.02). Caveat: blue-tinted inactive
+        # icons (e.g. 개화) sit mid-range — the unit count is the stronger
+        # signal for roster inference anyway.
+        sat = float((arr.max(axis=2) - arr.min(axis=2)).mean())
+        active = sat > 0.05
+        out.append(TraitRow(y, icon, name, active))
+    return out
+
+
+# ---------------------------------------------------------------- bench strip
+# Left edge: a column of ~9 bench slots (square portraits); the top slot in
+# this frame held a 5-cost unit with a gold cost badge. Empty slots are
+# flat dark squares.
+BENCH_X = (0.005, 0.024)
+BENCH_TOP = 0.213
+BENCH_STRIDE = 0.057
+BENCH_SLOTS = 9
+
+
+def bench_portraits(img: Image.Image) -> list[Image.Image | None]:
+    """One entry per bench slot; None for empty (flat dark) slots."""
+    rgb = np.asarray(img.convert("RGB"), dtype=np.float32) / 255
+    h, w = rgb.shape[:2]
+    x0, x1 = int(BENCH_X[0] * w), int(BENCH_X[1] * w)
+    out: list[Image.Image | None] = []
+    for k in range(BENCH_SLOTS):
+        y = int((BENCH_TOP + k * BENCH_STRIDE) * h)
+        side = int(0.042 * h)
+        z = rgb[y : y + side, x0:x1]
+        # empty slots are flat dark squares (std ~0.07); occupied ~0.19+
+        if float(z.std()) < 0.12:
+            out.append(None)
+            continue
+        out.append(img.crop((x0, y, x0 + side, y + side)).convert("RGB"))
+    return out
 
 
 # ---------------------------------------------------------------- scout cards

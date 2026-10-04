@@ -129,3 +129,48 @@ def test_scan_frame_composes():
     assert s.occupied == 1
     assert len(s.own_portraits) == 3
     assert len(s.opp_portraits) == 2
+
+
+def test_trait_rows_and_bench():
+    from tft_engine.capture.board import (
+        BENCH_SLOTS,
+        BENCH_STRIDE,
+        BENCH_TOP,
+        BENCH_X,
+        TRAIT_ICON,
+        TRAIT_ROW_STRIDE,
+        TRAIT_ROW_TOP,
+        TRAIT_NAME,
+        bench_portraits,
+        trait_rows,
+    )
+
+    arr = _frame()
+    h, w = arr.shape[:2]
+    rng = np.random.RandomState(5)
+    for k in range(4):
+        y = int((TRAIT_ROW_TOP + k * TRAIT_ROW_STRIDE) * h)
+        # colored hex icon + white name text
+        arr[y : y + 22, int(TRAIT_ICON[0] * w) : int(TRAIT_ICON[1] * w)] = (
+            rng.rand(22, max(1, int(TRAIT_ICON[1] * w) - int(TRAIT_ICON[0] * w)), 3)
+            * 255
+        )
+        arr[y + 2 : y + 12, int(TRAIT_NAME[0] * w) : int(TRAIT_NAME[0] * w) + 8] = 200
+    # gray (inactive) row after them
+    y5 = int((TRAIT_ROW_TOP + 4 * TRAIT_ROW_STRIDE) * h)
+    arr[y5 : y5 + 22, int(TRAIT_ICON[0] * w) : int(TRAIT_ICON[1] * w)] = 120
+    arr[y5 + 2 : y5 + 12, int(TRAIT_NAME[0] * w) : int(TRAIT_NAME[0] * w) + 8] = 200
+
+    rows = trait_rows(Image.fromarray(arr))
+    assert len(rows) == 5
+    assert [bool(r.active) for r in rows] == [True, True, True, True, False]
+
+    # bench: slot 0 occupied, rest empty
+    y0 = int(BENCH_TOP * h)
+    arr[y0 : y0 + 24, int(BENCH_X[0] * w) : int(BENCH_X[1] * w)] = (
+        rng.rand(24, max(1, int(BENCH_X[1] * w) - int(BENCH_X[0] * w)), 3) * 255
+    )
+    ports = bench_portraits(Image.fromarray(arr))
+    assert len(ports) == BENCH_SLOTS
+    assert ports[0] is not None
+    assert all(p is None for p in ports[1:])
