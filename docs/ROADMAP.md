@@ -156,3 +156,4 @@ in the client, so only opponent level is tracked.
 | 2026-10-02 | P (S3): +2 Lux variants (악의 여단=Coven, 햇빛=Solar) → 6/10 observed. Remaining: base, Blossom, Inferno, Primal. Board units still 64/65 (Rek'Sai). |
 | 2026-10-03 | P (S3): +1 Lux variant (지옥불=Inferno) → 7/9 observed. **No base Lux exists** — 9 named variants is the full set. Remaining: Blossom, Primal. Board units still 64/65 (Rek'Sai). |
 | 2026-10-03 | P (S3): +1 Lux variant (Primal) → 8/9 observed. Remaining: Blossom only. Board units still 64/65 (Rek'Sai). |
+| 2026-10-03 | P (S3): +Rek'Sai → **65/65 board units complete** (72 files incl. 8 Lux variants). Remaining gap: Lux Blossom variant. Next: hex-cell geometry needs full board screenshots, then the model matcher (silhouette/color, excluding health bar + item row). |
