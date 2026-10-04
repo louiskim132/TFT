@@ -61,7 +61,7 @@ pytest
 
 `tft_engine.json_api.decision_to_dict()` provides the initial boundary for a future HTTP/plugin endpoint. A future service can accept a JSON game state, construct `GameState`, call `DecisionEngine`, and return the serialized decision result without changing core decision logic.
 
-## Current state (rev. 2026-10-01)
+## Current state (rev. 2026-10-04)
 
 The project is **perception-first**: the engine core is built, and current
 work is turning screenshots into `GameState` fields with confidence.
@@ -73,8 +73,12 @@ work is turning screenshots into `GameState` fields with confidence.
   held-out measurement lives in `tests/frames/`).
 - **Held-out frames** — `tests/frames/`: 41 labeled shop bars (shop, level,
   XP, gold, streak per frame). Do not tune matchers against them.
-- **Board units** — `data/board_templates/18/`: 14/65 3D model crops;
-  matcher not built yet (S3, highest risk).
+- **Board perception (prototype)** — `tft_engine/capture/board.py`:
+  health-bar anchors, stats-panel portraits + star pips, trait-panel rows,
+  bench strip. Synthetic tests only; real-frame accuracy is not measured yet
+  (S1 frame corpus). `data/board_templates/18/` holds 65/65 3D model crops
+  (frozen, fallback only).
+- **Not yet extracted** — gold, level, XP, streak, stage, HP, items (S1/S3).
 - **Schema v1** `GameState` with positions, traits, opponents (staleness-aware),
   history, and `state_confidence`; versioned JSON round-trip.
 - **Knowledge cache** — `SQLiteStatsProvider` with atomic per-patch snapshots;
@@ -93,7 +97,7 @@ Docs: `docs/ARCHITECTURE.md`, `docs/DATA_SOURCES.md`, `docs/SCORING.md`,
 ## Next milestones
 
 See `docs/ROADMAP.md` (dated sprint plan) and the latest audit in
-`docs/AUDIT_2026-10-01.md`.
+`docs/AUDIT_2026-10-04.md`.
 
 ## Design constraint
 

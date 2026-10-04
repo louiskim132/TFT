@@ -4,8 +4,21 @@
 and return the 3 highest-win-rate moves within 1 s of a state change, with
 an explanation for each.
 
-Current audit: [`AUDIT_2026-10-01.md`](AUDIT_2026-10-01.md) (~35% toward
-the north star).
+Current audit: [`AUDIT_2026-10-04.md`](AUDIT_2026-10-04.md) (~38% toward
+the north star). Previous: [`AUDIT_2026-10-01.md`](AUDIT_2026-10-01.md).
+
+## Working rules (added 2026-10-04)
+
+1. **WIP limit.** Only work on items from the current sprint. Anything else
+   is a *spike*: time-boxed to 1 day, announced in the log first, and
+   closed with a go/no-go line.
+2. **No unmeasured CV.** Every frame used to fit or tune a perception
+   routine is saved under `tests/frames/` with a labeled sidecar *before*
+   the change is committed. Holdout frames are never used for tuning.
+3. **Canonical resolution.** Extractors run on frames resized to one
+   working resolution. Thresholds are fractions or are defined at that
+   resolution, never raw pixels of whatever was pasted.
+4. **Log, not diary.** One revision-log row per session or sprint.
 
 ## Tracks
 
@@ -27,7 +40,7 @@ the north star).
 - [x] Shop-card detection: 65 set-18 units, Korean client, variant and
       blur-shift tolerant (in-sample only)
 
-## Revision plan (rev. 2026-10-01)
+## Revision plan (rev. 2026-10-04)
 
 Two-week sprints. Each sprint ends with a dated audit that updates this
 file. Exit criteria are measured, not judged.
@@ -49,54 +62,97 @@ file. Exit criteria are measured, not judged.
 
 **Exit:** CI green on `origin/main`; held-out frame set exists.
 
-### S1 · HUD extraction + fresh knowledge — Oct 5 – Oct 16
+### Spike · Board perception — Oct 1 – Oct 4 (unplanned, closed)
 
+Pulled S3 forward with no time box. Outcome: **go** on the stats-panel
+path, **no-go** on 3D model matching as the primary signal.
+
+- [x] 3D model crop library, 65/65 units + 9 Lux variants
+      (`data/board_templates/18/`). **Frozen**: fallback / tie-breaker
+      only, and its KR trait→variant map feeds the trait reader
+- [x] `capture/board.py` prototypes: health-bar anchors, stats-panel gate
+      + portraits, star pips (1★ = no pips), trait rows, bench strip,
+      on-model star aura
+- [ ] **Debt:** the frames behind these prototypes were not saved, and the
+      8 tests are synthetic. Paid off in S1 (frame corpus)
+
+### S1 · Frame corpus, HUD extraction, fresh knowledge — Oct 5 – Oct 16
+
+Order matters: the corpus and the benchmark come first, so every later
+item has a measured result.
+
+- [ ] K: **staleness guard (day 1).** `/knowledge/status` reports age, and
+      the engine flags its output when the snapshot is more than 3 days old.
+      The DB crosses that threshold on 10-04
+- [ ] K: scheduled daily refresh (`--source full`)
+- [ ] Q: **frame corpus.** `tests/frames/full/`, ≥30 *native-resolution*
+      full frames with sidecars, covering planning, combat, stats panel
+      open, scouting, augment pick, carousel and level 10. Re-capture the
+      board-spike scenes. Split dev/holdout (≥10 holdout)
+- [ ] Q: ≥20 **new** shop bars as the first true shop holdout (the current
+      41 are the calibration set)
+- [ ] Q: `python -m evaluation.perception` gives per-field exact-match over
+      `tests/frames/` (dev and holdout reported separately) and runs in CI
+- [ ] P: canonical-resolution normalizer (`capture/frame.py`). Every
+      extractor takes a normalized frame. Convert `board.py` absolute-pixel
+      gates (bar height, portrait side, pip run, merge slack)
 - [ ] P: digit/glyph templates (same binarize + bbox method as shop strips)
-- [ ] P: from the shop bar: **gold, level, XP x/y, streak, shop odds**
-      (odds act as a level cross-check)
-- [ ] P: full-frame ROIs: **stage/round, own HP**
+- [ ] P: shop bar → **gold, level, XP x/y, streak, shop odds** (odds
+      cross-check level)
+- [ ] P: full-frame ROIs → **stage/round, own HP**
+- [ ] P: trait panel → **trait name + count** via the same glyph matcher
+      (KR trait map; also resolves the Lux variant)
 - [ ] P: each field returns `(value, confidence)`
-- [ ] K: staleness guard. `/knowledge/status` reports age, and the engine
-      flags its output when the snapshot is more than 3 days old
-- [ ] K: scheduled refresh (daily) + LoLCHESS guide decks for level
-      timings, augments and items (fills `composition_augments`)
 
-**Exit:** ≥98% exact-match on HUD fields over the held-out frames; DB age
-under 24 h.
+**Exit:** ≥98% exact-match on HUD fields (gold/level/XP/streak/stage/HP)
+over the **holdout** frames; trait name+count ≥95% on dev; shop accuracy
+reported on the new holdout; DB age under 24 h with the guard live.
 **Audit:** 2026-10-16.
 
 ### S2 · Live loop + action coverage — Oct 19 – Oct 30
 
-- [ ] I: window capture (`mss`) of the TFT client, resolution-normalized
-      ROIs (1080p, 1440p, 4K)
+- [ ] I: window capture (`mss`) of the TFT client → normalizer from S1
+      (1080p, 1440p, 4K verified on one frame each)
 - [ ] I: `StateAssembler`: per-frame fields → `GameState` with
       `state_confidence`; temporal smoothing across ~3 frames; change
       detection so decisions fire only on state change
 - [ ] I: `python -m tft_engine.live` prints the top-3 in a terminal side
-      window (no overlay yet)
+      window (no overlay yet), and **saves every frame it decides on**, so
+      the corpus grows for free
 - [ ] D: LEVEL / PRELEVEL candidates driven by the comp's level plan
 - [ ] D: roll-odds model (ingest TFTactics roll table + pool depletion)
       → `roll_efficiency`
 - [ ] D: SELL candidates (bench clutter, gold for a level breakpoint)
+- [ ] D: fix the real-DB eval miss (`contested_comp_penalized`)
 
-**Exit:** a real game runs end to end on HUD + shop fields; recommendation
-latency under 1 s; eval top-3 ≥90% on the real DB.
+**Exit:** a real game runs end to end on HUD + shop + trait fields;
+recommendation latency under 1 s; eval top-3 ≥90% on the real DB.
 **Audit:** 2026-10-30.
 
 ### S3 · Items, bench, board — Nov 2 – Nov 13
 
+Re-scoped after the spike. The primary board signal is the **stats panel +
+trait panel + health-bar count**, and model crops are fallback only.
+
+- [ ] P: **confirm the bench.** Is the left-edge portrait column really the
+      bench? If not, locate the bench row under the board. Decide on
+      ≥5 corpus frames
+- [ ] P: stats-panel portrait identity, calibrated from labeled panel
+      frames (like the shop strips). One template set shared with the bench
+      if the render family matches
+- [ ] P: star pips measured on the corpus (opp-column clipping is the
+      known failure mode); aura fallback for units without a panel row
 - [ ] P: item components + completed items (cdragon 2D icons; bench item
       row + unit hover)
-- [ ] P: bench units + star level (star pips)
-- [ ] P: board units, **highest risk**. Try the trait panel plus model-crop
-      matching (`board_templates`); fallback is a one-click user
+- [ ] P: board roster = panel identities ∪ trait-count consistency check;
+      health-bar count is a sanity bound. Fallback is a one-click user
       confirmation of the board
 - [ ] D: SLAM_ITEM candidates + item-fit scoring (TFTactics per-unit items)
 - [ ] D: margin- and reliability-aware confidence (replaces the sigmoid)
 - [ ] Q: decision logging (every state + top-3 + chosen action) to SQLite
 
-**Exit:** items/bench ≥95%, board ≥90% (or the fallback is shipped);
-every live decision is logged.
+**Exit:** items/bench ≥95%, board roster ≥90% on holdout (or the fallback
+is shipped); every live decision is logged.
 **Audit:** 2026-11-13.
 
 ### S4 · Opponents + MVP pilot — Nov 16 – Nov 27
@@ -118,8 +174,8 @@ real games; no catastrophic recommendations in review.
       sealed holdout)
 - [ ] Q: outcome join (placement per game) on the decision log
 - [ ] K: scope the Riot `tft-match-v1` own-data crawler (real sample sizes)
-- [ ] P: set-change drill: rebuild all templates in under 1 h from a
-      script
+- [ ] P: set-change drill: rebuild all templates (shop strips, glyphs,
+      panel portraits, trait names) in under 1 h from a script
 
 **Exit:** eval runs on real-game scenarios with a sealed holdout; a
 recalibration runbook exists.
@@ -145,18 +201,5 @@ in the client, so only opponent level is tracked.
 | 2026-09-13 | Original roadmap: engine-first, CV deferred (C1–C10 complete) |
 | 2026-10-01 | Audit. The project already pivoted to perception (shop CV, 09-15/16) without a doc update. Roadmap rewritten around the 5 tracks with dated sprints S0–S5. New: held-out frame set, staleness guard, CI repair, live loop, Riot-policy gate before any overlay. Dropped: opponent XP (not observable). |
 | 2026-10-01 | S0 round: 65-unit shop matcher finalized (variants + blur-shift, 220/220 in-sample, ~0.28 s/shop); 14 board-model crops stored under `data/board_templates/18/`; `tests/frames/` created — 41 labeled bars (shop/level/xp/gold/streak); `numpy`+`Pillow` declared; `tft.db` refreshed (snapshot 10); README updated. Pushed `27df741` — **CI green on origin/main; S0 exit met.** |
-| 2026-10-01 | P (S3 early): 24 more board-unit model crops labeled by user → **38/65 board templates**. Name check: `독두꺼비` mapped to Gromp (only toad unit in catalog — possible namu vs in-game naming gap), `늑대`→Murk Wolf, `바위게`→Scuttlecrab. Board matcher itself still TBD (needs full board frames for hex-cell geometry). |
-| 2026-10-01 | P (S3): +7 crops → **44/65 board units** (Pebbles, Morgana, Sentinel, Aphelios, Malphite, Soraka ×2). `독두꺼비` confirmed = Gromp alias. Missing: 3×c1 (Kobuko, Rek'Sai, Cinderling), 3×c2 (Alistar, Yunara, Sejuani), Master Yi, 4×c4 (Lillia, Sett, Amumu, Sivir), all 10 five-costs. |
-| 2026-10-01 | P (S3): +11 crops → **55/65 board units** (Amumu, Alistar, Yunara, Master Yi, Sejuani, Sett, Gnar, Taric, Maokai, Sivir, Kennen). Noted: item icons render in a row under the health bar — exclude that band when matching models. `독두꺼비`→Gromp alias added to `kr_names.json`. Missing 10: Kobuko, Rek'Sai, Cinderling, Lillia, + 6 five-costs (Ashe, Elder Dragon, Ivern, Lux, Alune, Draven). |
-| 2026-10-01 | P (S3): label fix — earlier batch's 6th crop was Ashe, not Soraka (user correction). **56/65 units.** Missing 9: Kobuko, Rek'Sai, Cinderling, Lillia, Elder Dragon, Ivern, Lux, Alune, Draven. |
-| 2026-10-01 | P (S3): +2 crops (Kobuko, Cinderling) → **58/65 units.** Another in-game naming gap: `불타는 정령`→Cinderling alias added (namu: 불타는 묘목). Missing 7: Rek'Sai, Lillia, Elder Dragon, Ivern, Lux, Alune, Draven. |
-| 2026-10-01 | P (S3): +6 crops (Lillia, Ivern, Lux, Elder Dragon, Draven, Alune) → **64/65 units**; only Rek'Sai left. Open item: Lux has 10 cosmetic variants (Blackthorn/Blossom/Coven/Elderwood/Fae/Inferno/Lunar/Primal/Solar + base) — icons nearly identical, variant ID needs user labels; stored crop's variant unknown. |
-| 2026-10-01 | P (S3): Lux variant mechanism confirmed — the **trait line on the card portrait** distinguishes variants (`나무정령` = Elderwood). Stored as `Lux__elderwood.png` (`__suffix` = variant label; matcher groups under Lux). To collect: Blackthorn, Blossom, Coven, Fae, Inferno, Lunar, Primal, Solar, base. Trait-name map needed later (S1) — trait text is separate from unit name. |
-| 2026-10-01 | P (S3): +3 Lux variants (달빛=Lunar, 요정=Fae, 검은가시=Blackthorn) → 4/10 observed. Trait-name KR→EN map is accumulating: 나무정령=Elderwood. Remaining: base, Blossom, Coven, Inferno, Primal, Solar. |
-| 2026-10-02 | P (S3): +2 Lux variants (악의 여단=Coven, 햇빛=Solar) → 6/10 observed. Remaining: base, Blossom, Inferno, Primal. Board units still 64/65 (Rek'Sai). |
-| 2026-10-03 | P (S3): +1 Lux variant (지옥불=Inferno) → 7/9 observed. **No base Lux exists** — 9 named variants is the full set. Remaining: Blossom, Primal. Board units still 64/65 (Rek'Sai). |
-| 2026-10-03 | P (S3): +1 Lux variant (Primal) → 8/9 observed. Remaining: Blossom only. Board units still 64/65 (Rek'Sai). |
-| 2026-10-03 | P (S3): +Rek'Sai → **65/65 board units complete** (72 files incl. 8 Lux variants). Remaining gap: Lux Blossom variant. Next: hex-cell geometry needs full board screenshots, then the model matcher (silhouette/color, excluding health bar + item row). |
-| 2026-10-04 | P (S3): first 4 full-board frames analyzed (1024x575). Findings: direct 3D-model matching is **not reliable alone** at this res (~60-80px units, weak MSE separation); cyan placement-overlay too occluded for grid fitting. What works: **green health-bar detection → 12-14 unit anchors/frame**; **damage-stats panel → per-unit portrait + star pips + damage for both boards** (own 8 + opp 7 rows extracted on test frame); **scout cards → opponent unit name text + star pips**; scoreboard → HP ranking. Stars: no numeric indicator — panel pips primary (verified 4×2★+4×1★ read), on-model aura fallback (2★ white glow, 3★ gold, per user). New module `capture/board.py` (+7 tests, 73 total green): `find_health_bars`, `stat_panel_portraits` (+panel-open gate), `count_star_pips`, `star_aura`, `unit_crop`, `scan_frame`. Open: stat-portrait identity needs a **labeled panel screenshot** (deterministic renders → calibrate like shop strips); hex-cell geometry needs a planning-phase frame (units at rest); pip detector needs a labeled pip set (one 2★ read as 1). |
-| 2026-10-04 | P (S3): +Lux Blossom (개화) → **all 9 Lux variants collected — board template library fully complete: 65/65 units, 73 files.** Manifest carries the full KR trait→variant map (개화=Blossom …) for the S1 trait-panel reader. |
-| 2026-10-04 | P (S3→S1): second stats-panel frame analyzed. **Pip detector fixed** (pips live in portrait's bottom 2-3 rows, not an 8px band): own read verified [2,0,2,2,2,0,2] all correct; opp column ~90% (1px-clipped pips remain the failure mode). Confirmed: **1★ shows no pips** in the panel. New extractors in `board.py`: `trait_rows` (left HUD trait list — icon/name crops + active flag via icon saturation; **Lux-variant traits 개화/햇빛/검은 가시/원시 appear here → the variant evidence path**), `bench_portraits` (left-edge 9-slot bench column — same render family as stats portraits → shared template library). Also found the augment icon bar (x~0.62-0.72, top-left area). Fixed an RGBA-alpha bug that poisoned every saturation read. Caveats: trait `active` flag is icon-saturation-based (blue-tinted inactive icons read mid-range — count is the stronger signal); trait-name glyph matching is S1 work; "1+ more" footer row is passed through for the matcher to reject. |
+| 2026-10-01 → 10-04 | **Unplanned S3 spike** (15 commits, see audit 10-04). Board model-crop library completed: 65/65 units + all 9 Lux variants (variant identified by the portrait/trait-panel trait line; no base Lux). KR alias gaps fixed: `독두꺼비`→Gromp, `불타는 정령`→Cinderling. Finding: 3D model matching is weak at 1024×575, so the library is frozen. `capture/board.py`: health-bar anchors, stats-panel portraits + pip detector (1★ shows no pips; own column read correctly on one frame, opp ~90%), trait rows, bench strip, star aura; RGBA alpha bug fixed. 74 tests, CI green. **Source frames were not saved.** |
+| 2026-10-04 | Audit ([`AUDIT_2026-10-04.md`](AUDIT_2026-10-04.md)), ~38%. Added working rules (WIP limit, no unmeasured CV, canonical resolution, compact log). S1 now starts with the staleness guard, a native-resolution frame corpus, a new shop holdout and a perception benchmark; the resolution normalizer moves S2→S1; the trait-panel reader joins S1. S3 board re-scoped to stats panel + trait panel + health bars, with bench identity to confirm. S2 adds frame saving in the live loop and the real-DB eval fix. |
