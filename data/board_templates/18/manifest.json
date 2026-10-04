@@ -141,6 +141,7 @@
    "type": "model-crop",
    "variants_observed": [
     "blackthorn",
+    "blossom",
     "coven",
     "elderwood",
     "fae",
@@ -150,7 +151,8 @@
     "solar"
    ],
    "variant_source": "trait line on card portrait; no base Lux exists in-game",
-   "variants_total": 9
+   "variants_total": 9,
+   "trait_map": "개화=Blossom, 나무정령=Elderwood, 달빛=Lunar, 요정=Fae, 검은가시=Blackthorn, 악의 여단=Coven, 햇빛=Solar, 지옥불=Inferno, primal=Primal"
   },
   "Malphite": {
    "source": "Raw_Screenshot/3d + pasted crops",
